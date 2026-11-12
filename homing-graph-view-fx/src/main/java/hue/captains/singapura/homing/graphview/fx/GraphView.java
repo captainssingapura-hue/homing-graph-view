@@ -16,19 +16,22 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.util.Subscription;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a figure, a container unless
  * the staging's shapes say otherwise, its layer by depth laid out flat in a block on a platform coloured for the layer,
  * and the layers stacked as a {@link Staging} says: standing one behind another or lying one above another, level 0
- * at either end; all over a grid on the floor. Each edge is a rod. The camera starts orbiting, framed on the whole graph, and can fly or drone
- * through it; a readout in the corner says which, what the keys do and what is selected. What a selection means is
- * asked of a Focus, reachability unless another is given.
+ * at either end; all over a grid on the floor. Each edge is a rod. The camera starts orbiting, framed on the whole
+ * graph, and can fly or drone through it; a readout in the corner says which, what the keys do and what is selected.
+ * What a selection means is asked of a Focus, reachability unless another is given, and each change of it goes out as
+ * a {@link VertexSelection} to the listeners subscribed.
  */
 public final class GraphView extends Region implements Mutable {
 
@@ -46,6 +49,7 @@ public final class GraphView extends Region implements Mutable {
     private final SubScene scene;
     private final Navigator navigator;
     private final Label readout = new Label();
+    private final SelectionFeed feed = new SelectionFeed();
     private final double yaw;
     private final Room room;
     private Optional<Highlight> selection = Optional.empty();
@@ -105,18 +109,36 @@ public final class GraphView extends Region implements Mutable {
         paint();
     }
 
-    /** Selects a vertex of the graph: the focus says what it lights. */
+    /** Selects a vertex of the graph: the focus says what it lights, and every listener hears of it. */
     public void select(final Vertex vertex) {
         selection = Optional.of(focus.of(graph, vertex));
         paint();
         showReadout();
+        feed.emit(new VertexSelection.Some(vertex));
     }
 
-    /** Clears the selection. */
+    /** Clears the selection, and every listener hears that nothing is selected. */
     public void clear() {
         selection = Optional.empty();
         paint();
         showReadout();
+        feed.emit(new VertexSelection.Nothing());
+    }
+
+    /**
+     * Listens to the selection: from now on, the listener hears each change of it, some vertex selected or nothing, by
+     * a click, by Esc or by {@link #select} and {@link #clear}. Nothing is selected to begin with.
+     *
+     * @param listener told of each change
+     * @return what ends the listening
+     */
+    public Subscription subscribe(final Consumer<? super VertexSelection> listener) {
+        return feed.subscribe(listener);
+    }
+
+    /** What is selected: some vertex, or nothing. */
+    public VertexSelection selected() {
+        return feed.current();
     }
 
     /** The selection, empty when nothing is selected. */

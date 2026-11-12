@@ -57,6 +57,20 @@ the side as from the front; each layer keeps far enough from the next, and lying
 from the starting camera none hides another. A selection colours the figures it reaches and darkens the rest, and each
 edge is a rod. A readout in the corner names the camera's mode, what the keys do in it and what is selected.
 
+The view emits an event each time its selection changes, by a click, by Esc, or by `select` and `clear`: a
+`VertexSelection`, a plain value that is either `Some(vertex)` or `Nothing()`. A listener switches on the two, so
+clearing what it shows is as easy as showing the next; setting the selection to what it already is tells no one.
+Anything more, what to say of a vertex, say, is the listener's own:
+
+```java
+Subscription subscription = view.subscribe(event -> {
+    switch (event) {
+        case VertexSelection.Some(Vertex vertex) -> panel.show(vertex);
+        case VertexSelection.Nothing() -> panel.clear();
+    }
+});
+```
+
 The camera has three modes, and Tab steps through them, keeping the view:
 
 - **Orbit**, the start, framed on the whole graph: drag to turn, right-drag or Shift-drag to pan, and scroll to zoom
@@ -118,6 +132,11 @@ every module of the JDK, or the British Royal Family. Under it, the layout: hori
 another, or vertical, one above another. Picking another demo or layout draws it afresh in place of the last. The
 JDK's modules are read from the running JDK, each a container sized by its packages: small for up to 2, half for up
 to 9, full for more.
+
+Down the right, a details panel says what is selected, kept up by listening to the view's selection events: for a
+JDK module, its name; for a member of the royal family, who they are, from a line each in the demo's
+`royal-family.txt`, then their parents, whom they married and their children, read from the graph. The panel, the
+descriptions and the reading of the family are all the demo's: the view only says what is selected.
 
 The arguments say which demo and layout to start on (`lying` for vertical), and `near` puts level 0 at the near
 end of the stack, in front or on top, for them all. To start on another module, which joins the list,

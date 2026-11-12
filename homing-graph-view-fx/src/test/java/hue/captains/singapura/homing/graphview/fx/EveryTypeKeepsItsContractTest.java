@@ -22,7 +22,7 @@ class EveryTypeKeepsItsContractTest {
                 EdgeState.class, FlyCamera.class, Velocity.class, Grounds.class, Grid.class, Ticker.class,
                 FreeFlight.class, Navigator.class, Stance.class, Stacking.class, Container.class,
                 Containers.class, Uniform.class, Order.class, Staging.class, Deck.class, Platforms.class, Shapes.class, Room.class,
-                Figure.class, ContainerShapes.class)), "found " + types);
+                Figure.class, ContainerShapes.class, VertexSelection.class, SelectionFeed.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())

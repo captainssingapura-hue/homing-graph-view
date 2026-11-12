@@ -4,8 +4,10 @@ import hue.captains.singapura.homing.graphview.fx.GraphView;
 import hue.captains.singapura.homing.graphview.fx.Order;
 import hue.captains.singapura.homing.graphview.fx.Stance;
 import hue.captains.singapura.homing.graphview.fx.Staging;
+import hue.captains.singapura.homing.graphview.fx.VertexSelection;
 import hue.captains.singapura.homing.graphview.layout.Reachability;
 import hue.captains.singapura.homing.graphview.model.Graph;
+import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.Mutable;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -21,8 +23,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * The demo's window: down the left, a list of the demos and a choice of layout, horizontal or vertical; beside them,
- * the demo picked, drawn in the layout chosen. Picking another demo or layout draws it afresh in place of the last.
+ * The demo's window: down the left, a list of the demos and a choice of layout, horizontal or vertical; in the middle,
+ * the demo picked, drawn in the layout chosen; down the right, the details of what is selected in it, kept up by
+ * listening to the view's selection events. Picking another demo or layout draws it afresh in place of the last.
  * The arguments say where to start: royal or a JDK module, which joins the list if it is not on it; lying for the
  * vertical layout; and near to put level 0 at the near end of the stack, in front or on top.
  */
@@ -40,6 +43,7 @@ final class Showcase implements Mutable {
     private final ListView<String> list = new ListView<>();
     private final RadioButton horizontal = new RadioButton("Horizontal");
     private final RadioButton vertical = new RadioButton("Vertical");
+    private final Details details = new Details();
     private final List<Exhibit> exhibits = new ArrayList<>(List.of(new Exhibit.Modules("java.se"),
             new Exhibit.Modules("java.desktop"), new Exhibit.Modules("jdk.jshell"), new Exhibit.Modules("ALL-SYSTEM"),
             new Exhibit.Royals()));
@@ -69,6 +73,7 @@ final class Showcase implements Mutable {
             redraw();
         });
         root.setLeft(side());
+        root.setRight(details.node());
         list.getSelectionModel().select(first);
     }
 
@@ -119,6 +124,13 @@ final class Showcase implements Mutable {
         try {
             final Graph graph = exhibit.graph();
             final GraphView view = new GraphView(graph, new Reachability(), staging.with(exhibit.shapes()));
+            details.clear();
+            view.subscribe(event -> {
+                switch (event) {
+                    case VertexSelection.Some(Vertex vertex) -> details.show(exhibit.detail(vertex, graph));
+                    case VertexSelection.Nothing() -> details.clear();
+                }
+            });
             root.setCenter(view);
             title.accept("homing-graph-view demo: " + exhibit.title(graph) + ", " + where());
             view.requestFocus();
