@@ -177,7 +177,8 @@ public final class GraphView extends Region implements Mutable {
     }
 
     private Orbit framing() {
-        return new Framing().of(centres, room.width() / 2 + Stacking.MARGIN, yaw, PITCH, rig.fieldOfView(),
+        final double reach = Math.max(room.width(), room.height()) / 2 + Stacking.MARGIN;
+        return new Framing().of(centres, reach, yaw, PITCH, rig.fieldOfView(),
                 getWidth() / Math.max(getHeight(), 1));
     }
 

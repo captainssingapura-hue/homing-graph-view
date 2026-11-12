@@ -1,0 +1,37 @@
+# Cat breeds and the breeds they were bred from, a line each: name | coat | bred from, by commas | who they are.
+# A coat is long, short, hairless or wild; a breed bred from none is a founder: a natural breed, a mutation or a wild cat.
+Persian | long | | A long-haired, flat-faced breed, one of the oldest recognised; named for Persia, now Iran.
+Siamese | short | | A slender, blue-eyed colourpoint breed from Thailand, once Siam.
+Abyssinian | short | | A short-haired breed with a ticked coat, named for Abyssinia, now Ethiopia.
+American Shorthair | short | | A sturdy working cat, descended from the cats settlers brought to North America.
+British Shorthair | short | | A round-faced, dense-coated breed from Britain, best known in blue.
+Russian Blue | short | | A short silver-blue coat and green eyes; said to come from Arkhangelsk in Russia.
+Domestic Shorthair | short | | Not a breed: the everyday short-haired cat of mixed ancestry.
+Manx | short | | A tailless or short-tailed breed from the Isle of Man.
+Munchkin | short | | Short legs from a natural mutation, bred in the United States from the 1980s.
+Donskoy | hairless | | A hairless breed from Rostov-on-Don, Russia, from a natural mutation found in 1987.
+Asian Leopard Cat | wild | | A small wild cat of South and East Asia; not domestic.
+Serval | wild | | A wild cat of Africa with long legs and large ears; not domestic.
+Himalayan | long | Persian, Siamese | A Persian with the Siamese's colourpoints and blue eyes, from crossing the two.
+Exotic Shorthair | short | Persian, American Shorthair | A short-haired Persian, from crossing Persians with American Shorthairs.
+Balinese | long | Siamese | A long-haired Siamese.
+Colorpoint Shorthair | short | Siamese, American Shorthair | A Siamese in colours beyond the four traditional points, from crosses with American Shorthairs.
+Oriental Shorthair | short | Siamese, Abyssinian, Russian Blue, British Shorthair | A Siamese in build, in solid and patterned colours, from crosses with other breeds.
+Burmese | short | Siamese | Compact and glossy, bred in the United States from a cat called Wong Mau crossed with Siamese.
+Ocicat | short | Siamese, Abyssinian, American Shorthair | Spotted like a wild cat but wholly domestic, from Siamese, Abyssinians and American Shorthairs.
+Somali | long | Abyssinian | A long-haired Abyssinian.
+Bengal | short | Asian Leopard Cat, Domestic Shorthair | A spotted or marbled breed, from crosses of Asian leopard cats with domestic cats.
+Savannah | short | Serval, Siamese | From crossing servals with domestic cats; the first was born in 1986.
+British Longhair | long | British Shorthair, Persian | A long-haired British Shorthair, from crosses with Persians.
+Scottish Fold | short | British Shorthair, American Shorthair | Folded ears from a mutation found in Scotland in 1961, outcrossed with British and American Shorthairs.
+Minuet | long | Munchkin, Persian | Short-legged, from Munchkins crossed with Persians; once called the Napoleon.
+Cymric | long | Manx | A long-haired Manx.
+Havana Brown | short | Siamese, Domestic Shorthair | A solid chocolate-brown breed, from Siamese and domestic black cats.
+Snowshoe | short | Siamese, American Shorthair | A colourpoint with white feet, from Siamese and bicolour American Shorthairs.
+Oriental Longhair | long | Oriental Shorthair, Balinese | The long-haired Oriental.
+Tonkinese | short | Siamese, Burmese | A cross of Siamese and Burmese, between the two in build.
+Bombay | short | Burmese, American Shorthair | A black, copper-eyed cat bred to look like a small panther, from Burmese and black American Shorthairs.
+Burmilla | short | Burmese, Persian | From an accidental mating of a Burmese and a Chinchilla Persian in Britain in 1981.
+Australian Mist | short | Burmese, Abyssinian, Domestic Shorthair | Bred in Australia from Burmese, Abyssinians and domestic shorthairs; once called the Spotted Mist.
+Toyger | short | Bengal, Domestic Shorthair | Bred to look like a toy tiger, from Bengals and domestic shorthairs.
+Peterbald | hairless | Donskoy, Oriental Shorthair | Hairless or nearly so, from a Donskoy and an Oriental Shorthair in St Petersburg in 1994.

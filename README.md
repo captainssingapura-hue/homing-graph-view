@@ -10,9 +10,11 @@ nothing here depends on the studio.
 | `homing-graph-view-model` | the graph: `Vertex`, `Edge`, `Vertices`, `Edges` and `Graph`, vertices and edges only | Java 25, jOntology core |
 | `homing-graph-view-layout` | what is read from a graph before it is drawn: `Closure`, `LayersByDepth` and its `Placement`, `Layers`, `LayerInBlock` with its `Ladder` and `Arrangement`, and `Focus` with `Highlight` and the default, `Reachability` | the model, jOntology core |
 | `homing-graph-view-samples` | graphs to try the views on: `JdkModules`, the running JDK's modules, `RoyalFamily`, the British Royal Family in four generations, and `MadeUp`, layers of any size; not published | the model |
-| `homing-graph-view-fx` | `GraphView`, an ordinary JavaFX node that draws a graph in 3D, with its camera, slates and rods | the layout, JavaFX 25 |
-| `homing-graph-view-demo` | a window over `GraphView` showing the JDK's own modules; not published | the view, the samples |
+| `homing-graph-view-fx` | `GraphView`, an ordinary JavaFX node that draws a graph in 3D, with its camera, figures and rods, and emits a `VertexSelection` as its selection changes | the layout, JavaFX 25 |
+| `homing-graph-view-viewer` | a ready-made window over `GraphView` for anyone to use: a `Registry` of `Exhibit`s, each a graph with its `Shapes` and its `Explanations`, a layout choice and a details panel; `ViewerApplication` makes it an application | the view |
+| `homing-graph-view-demo` | the viewer over the JDK's own modules and the British Royal Family; not published | the viewer, the samples |
 | `homing-graph-view-bench` | a flat, 2D window over the layout, to look at it and polish it; not published | the layout, the samples, JavaFX 25 |
+| `homing-graph-view-example-cats` | an example on its own, as anyone downstream would write one: cat breeds and the breeds they came from, in the viewer; not published | the viewer |
 
 A vertex is its identity and an edge its link, from the vertex that depends to the vertex it depends on. A graph is the
 product of its vertices and its edges, each an ordered vector, and is valid whenever it exists: every value refuses what
@@ -119,6 +121,39 @@ It shows one layer at a time. The knobs along the top pick the graph (a JDK modu
 such as `2 8 30 90` for a made-up graph), which of its layers to show (the largest at first; Page Up and Page Down step
 through them), the screen's shape and the ladder's growth.
 
+## The viewer
+
+`homing-graph-view-viewer` is a ready-made window over `GraphView`, to use as it is. Give it a `Registry` of
+`Exhibit`s, each a graph with the functional objects it needs: its `Shapes`, what each vertex is drawn as, and its
+`Explanations`, what to say of a vertex selected. `new Exhibit(name, graph)` shows a graph plainly, in full containers
+explained by their names.
+
+Down the left, a list of the exhibits and a choice of layout: horizontal, the layers one behind another, or vertical,
+one above another. Picking another exhibit or layout draws it afresh in place of the last. Down the right, a details
+panel shows the explanation of what is selected, kept up by listening to the view's selection events. Everything said
+of a vertex comes from the exhibit's own explanations: the viewer only asks.
+
+`ViewerApplication` makes it an application from one method:
+
+```java
+public final class Cats extends ViewerApplication {
+
+    public static void main(final String[] args) {
+        launch(args);
+    }
+
+    @Override
+    protected Registry registry(final List<String> args) {
+        final Graph breeds = new Studbook().graph();
+        return new Registry(List.of(new Exhibit("Cat breeds", breeds, new CatBadges(), new CatExplanations()),
+                new Exhibit("Cat breeds, plainly", breeds)));
+    }
+}
+```
+
+Its command-line arguments, in any order: `lying` starts in the vertical layout, `near` puts level 0 at the near end
+of the stack, in front or on top, and any other word picks the exhibit to start on by part of its name.
+
 ## Demo
 
 After `mvn install`:
@@ -127,20 +162,13 @@ After `mvn install`:
 mvn -pl homing-graph-view-demo javafx:run
 ```
 
-A list down the left picks the demo to show: `java.se`, `java.desktop` or `jdk.jshell` and every module each requires,
-every module of the JDK, or the British Royal Family. Under it, the layout: horizontal, the layers one behind
-another, or vertical, one above another. Picking another demo or layout draws it afresh in place of the last. The
-JDK's modules are read from the running JDK, each a container sized by its packages: small for up to 2, half for up
-to 9, full for more.
+The demo is the viewer over `java.se`, `java.desktop` and `jdk.jshell` with every module each requires, every module
+of the JDK, and the British Royal Family. The JDK's modules are read from the running JDK, each a container sized by
+its packages, small for up to 2, half for up to 9, full for more, and explained by its name. A member of the royal
+family is explained by who they are, from a line each in the demo's `royal-family.txt`, then their parents, whom they
+married and their children, read from the graph.
 
-Down the right, a details panel says what is selected, kept up by listening to the view's selection events: for a
-JDK module, its name; for a member of the royal family, who they are, from a line each in the demo's
-`royal-family.txt`, then their parents, whom they married and their children, read from the graph. The panel, the
-descriptions and the reading of the family are all the demo's: the view only says what is selected.
-
-The arguments say which demo and layout to start on (`lying` for vertical), and `near` puts level 0 at the near
-end of the stack, in front or on top, for them all. To start on another module, which joins the list,
-or on every module of the JDK:
+To start on another module, which joins the list, or on every module of the JDK:
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args=java.desktop
@@ -168,6 +196,18 @@ king or queen, a prince in a coronet, a princess in a tiara, or a plain head and
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="royal lying near"
+```
+
+## Cat breeds
+
+`homing-graph-view-example-cats` is an example on its own, written as anyone downstream would write one: it uses the
+viewer and nothing else of this project's examples. Its studbook, `cat-breeds.txt`, has 35 breeds, a line each, with
+its coat, the breeds it was bred from and who it is: as a graph, each breed points to the breeds it was bred from, so
+the founders - natural breeds, mutations and two wild cats - are level 0. Each breed is a cat's-head badge in the
+colour of its coat, and is explained by who it is, what it was bred from and what was bred from it:
+
+```bash
+mvn -pl homing-graph-view-example-cats javafx:run -Djavafx.args="lying near"
 ```
 
 ## Licence

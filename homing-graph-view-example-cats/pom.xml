@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+        <artifactId>homing-graph-view</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>homing-graph-view-example-cats</artifactId>
+    <description>
+        An example on its own, as anyone downstream would write one: cat breeds and the breeds they were bred from,
+        shown in the ready-made viewer with shapes and explanations of its own. It uses the viewer and nothing else of
+        this project's examples. Not published. After mvn install at the top:
+        mvn -pl homing-graph-view-example-cats javafx:run, or -Djavafx.args="lying near" for the vertical layout with
+        the founding breeds on top.
+    </description>
+
+    <properties>
+        <javafx.args></javafx.args>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+            <artifactId>homing-graph-view-viewer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcing-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>hue.captains.singapura.homing.graphview.cats.Cats</mainClass>
+                    <commandlineArgs>${javafx.args}</commandlineArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

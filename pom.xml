@@ -29,10 +29,14 @@
         <module>homing-graph-view-samples</module>
         <!-- GraphView, the embeddable JavaFX node that draws a graph in 3D. -->
         <module>homing-graph-view-fx</module>
+        <!-- A ready-made window over GraphView: a registry of exhibits, a layout choice and a details panel. -->
+        <module>homing-graph-view-viewer</module>
         <!-- A window over GraphView showing the JDK's own modules; not published. mvn -pl homing-graph-view-demo javafx:run -->
         <module>homing-graph-view-demo</module>
         <!-- A flat, 2D window over the layout, to look at and polish it; not published. mvn -pl homing-graph-view-bench javafx:run -->
         <module>homing-graph-view-bench</module>
+        <!-- An example on its own, over the viewer: cat breeds and the breeds they came from; not published. -->
+        <module>homing-graph-view-example-cats</module>
     </modules>
 
     <properties>

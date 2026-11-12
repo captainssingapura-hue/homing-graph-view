@@ -5,6 +5,10 @@ import hue.captains.singapura.homing.graphview.fx.Room;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.homing.graphview.samples.RoyalFamily;
+import hue.captains.singapura.homing.graphview.viewer.Exhibit;
+import hue.captains.singapura.homing.graphview.viewer.Explanation;
+import hue.captains.singapura.homing.graphview.viewer.Names;
+import hue.captains.singapura.homing.graphview.viewer.Registry;
 import hue.captains.singapura.tao.ontology.enforcer.ContractViolation;
 import hue.captains.singapura.tao.ontology.enforcer.OntologyEnforcer;
 import hue.captains.singapura.tao.ontology.utils.PackageScanner;
@@ -18,7 +22,9 @@ import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** The demo's exhibits: the royal family framed by title, the JDK's modules in containers, and every type's contract. */
+/**
+ * The demo's registry: the JDK's modules in containers, the royal family framed by title, and every type's contract.
+ */
 class DemoTest {
 
     @Test
@@ -42,12 +48,25 @@ class DemoTest {
     }
 
     @Test
-    void theRoyalFamilyIsFramedAndTheModulesAreContainers() {
-        assertEquals(new Portraits(), new Exhibit.Royals().shapes());
+    void theRegistryHoldsTheModulesInContainersAndTheRoyalFamilyInPortraits() {
+        final Registry registry = new Demo().registry(List.of());
+        assertEquals(List.of("JDK: java.se", "JDK: java.desktop", "JDK: jdk.jshell", "JDK: every module (ALL-SYSTEM)",
+                "British Royal Family"), registry.items().stream().map(Exhibit::name).toList());
+        final Exhibit royals = registry.items().getLast();
+        assertEquals(new Portraits(), royals.shapes());
+        assertEquals(new RoyalExplanations(), royals.explanations());
         assertEquals(new Room(140, 172, 14), new Portraits().room());
-        assertEquals(new ContainerShapes(new PackageCounts()), new Exhibit.Modules("java.se").shapes());
-        assertEquals("British Royal Family", new Exhibit.Royals().name());
-        assertEquals("Every JDK module", new Exhibit.Modules("ALL-SYSTEM").name());
+        assertEquals(new ContainerShapes(new PackageCounts()), registry.items().getFirst().shapes());
+        assertEquals(new Names(), registry.items().getFirst().explanations());
+    }
+
+    @Test
+    void aModuleAskedForThatIsNotListedJoinsAtTheTopAndAnythingListedIsFound() {
+        final Registry withXml = new Demo().registry(List.of("java.xml", "lying"));
+        assertEquals("JDK: java.xml", withXml.items().getFirst().name());
+        assertEquals(6, withXml.size());
+        assertEquals(5, new Demo().registry(List.of("royal", "near")).size());
+        assertEquals(5, new Demo().registry(List.of("no.such.module")).size(), "a module the JDK lacks is left out");
     }
 
     @Test
@@ -67,16 +86,16 @@ class DemoTest {
         assertEquals("Parents: Queen Elizabeth II and Prince Philip\nMarried to: Diana Spencer and Queen Camilla\n"
                 + "Children: Prince William and Prince Harry", new Kin().of(family, new Vertex("King Charles III")));
         assertEquals("Parent: Princess Eugenie", new Kin().of(family, new Vertex("Adelaide")));
-        final Detail william = new Exhibit.Royals().detail(new Vertex("Prince William"), family);
+        final Explanation william = new RoyalExplanations().of(new Vertex("Prince William"), family);
         assertEquals("Prince William", william.heading());
         assertTrue(william.body().startsWith("Prince of Wales") && william.body().contains("\n\nParents: "));
     }
 
     @Test
     void theDetailsOfAModuleAreJustItsName() {
-        final Graph modules = new Exhibit.Modules("java.se").graph();
-        assertEquals(new Detail("java.base", ""), new Exhibit.Modules("java.se").detail(new Vertex("java.base"),
-                modules));
+        final Exhibit javaSe = new Demo().registry(List.of()).items().getFirst();
+        assertEquals(new Explanation("java.base", ""), javaSe.explanations().of(new Vertex("java.base"),
+                javaSe.graph()));
     }
 
     @Test
@@ -85,9 +104,8 @@ class DemoTest {
         final List<Class<?>> types = new PackageScanner().scan(Demo.class.getPackageName()).stream()
                 .filter(type -> main.equals(type.getProtectionDomain().getCodeSource()))
                 .toList();
-        assertTrue(types.containsAll(List.of(Demo.class, Showcase.class, Exhibit.class, PackageCounts.class,
-                Portraits.class, Placeholders.class, Titles.class, Title.class, Details.class, Detail.class,
-                Biographies.class, Kin.class)), "found " + types);
+        assertTrue(types.containsAll(List.of(Demo.class, PackageCounts.class, Portraits.class, Placeholders.class,
+                Titles.class, Title.class, Biographies.class, Kin.class, RoyalExplanations.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())
