@@ -6,44 +6,61 @@ import hue.captains.singapura.homing.graphview.layout.Placement;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.FunctionalObject;
 import javafx.geometry.Point3D;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
- * Sets a placement's layers, each flat in its block, in the 3D space in a stance, and stacks them. A slot is a slate
- * and the room around it: {@value #COLUMN} across, and {@value #ROW} up when standing or {@value #ROW_DEEP} back when
- * lying.
+ * Sets a placement's layers, each flat in its block, in the 3D space, and stacks them in order, each on a platform. A
+ * slot is a container's room: {@value #COLUMN} across, and {@value #ROW} up when standing or {@value #ROW_DEEP} back
+ * when lying. Standing, a layer's containers hang on a board behind them; lying, they sit on a floor.
  *
- * <p>The ladder, for the layout to lay the layers out with, shapes a block to look 16:9 from the starting camera: a
- * standing block is 16:9; a lying one is deeper, as the camera sees its depth foreshortened by the sine of its pitch.
- * Each layer keeps clear of the next as the starting camera sees them, looking straight in at its pitch: a standing
- * layer stands far enough behind the one in front to show over it, and a lying layer lies high enough above the one
- * below to show beyond it.
+ * <p>A block is shaped like a 16:9 screen, upright when standing and laid flat when lying. Each layer keeps clear of the
+ * next as the starting camera sees them, looking straight in at its pitch: a standing layer stands far enough behind
+ * the one in front to show over it, and a lying layer lies high enough above the one below for the whole floor below to
+ * show under it.
  *
  * @param stance how the blocks are set
+ * @param order  which end of the stack level 0 goes at
  * @param pitch  the starting camera's pitch, in degrees, negative looking down
  */
-record Stacking(Stance stance, double pitch) implements FunctionalObject {
+record Stacking(Stance stance, Order order, double pitch) implements FunctionalObject {
 
     /** A slot's width, its height standing and its depth lying. */
     static final double COLUMN = 230;
     static final double ROW = 80;
     static final double ROW_DEEP = 160;
-    /** The least distance from one layer to the next. */
+    /** A platform's thickness, and how far it reaches beyond the containers on it. */
+    static final double THICKNESS = 12;
+    static final double MARGIN = 24;
+    /** The least distance from one standing layer to the next, and from one lying layer up to the next. */
     static final double LEAST_GAP = 300;
+    static final double LEAST_RISE = 180;
     private static final double SCREEN = 16.0 / 9;
     private static final double GROWTH = 1.5;
+    private static final double STANDING_YAW = -28;
+    /** Room beyond what looking straight in needs, for the camera's perspective: far things look flatter. */
+    private static final double CLEARANCE = 1.35;
 
-    /** The ladder a layer's block is taken from, by the stance's slot and the shape the camera should see. */
+    /** The ladder a layer's block is taken from: a screen's shape in slots of the stance's size. */
     Ladder ladder() {
-        return switch (stance) {
-            case Stance.Standing() -> new Ladder(COLUMN / ROW, SCREEN, GROWTH);
-            case Stance.Lying() -> new Ladder(COLUMN / ROW_DEEP, SCREEN * Math.sin(Math.toRadians(-pitch)), GROWTH);
-        };
+        return new Ladder(COLUMN / (stance instanceof Stance.Standing ? ROW : ROW_DEEP), SCREEN, GROWTH);
+    }
+
+    /** The starting camera's turn: standing, a little from the side; lying, straight at the front of the stack. */
+    double yaw() {
+        return stance instanceof Stance.Standing ? STANDING_YAW : 0;
+    }
+
+    /** How far below a container's centre the stage reaches: half a container, a margin and a platform. */
+    double below() {
+        return Slate.HEIGHT / 2 + MARGIN + THICKNESS;
     }
 
     /**
-     * Where each slate is centred, in the placement's order.
+     * Where each container is centred, in the placement's order.
      *
      * @param placement the layers laid out with this stacking's ladder
      */
@@ -60,22 +77,60 @@ record Stacking(Stance stance, double pitch) implements FunctionalObject {
     }
 
     /**
-     * How far along the stack each layer sits: standing, back from the root's layer at 0; lying, up from the base's.
+     * Each layer's platform, level 0's first: as wide as its containers reach, with a margin all round.
+     *
+     * @param placement the layers laid out with this stacking's ladder
      */
+    List<Deck> decks(final Placement placement) {
+        final double[] along = along(placement);
+        final List<Deck> decks = new ArrayList<>();
+        for (int depth = 0; depth <= placement.maxDepth(); depth++) {
+            final int layer = depth;
+            final List<Double> lanes = placement.items().stream().filter(placed -> placed.depth() == layer)
+                    .map(Placed::lane).toList();
+            final double low = lanes.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+            final double high = lanes.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+            final double x = (low + high) / 2 * COLUMN;
+            final double width = (high - low) * COLUMN + Slate.LENGTH + 2 * MARGIN;
+            final int rows = Math.max(1, placement.rowsOf(depth));
+            decks.add(stance instanceof Stance.Standing
+                    ? new Deck(depth, new Point3D(x, -(rows - 1) * ROW / 2, along[depth] + Slate.DEPTH / 2
+                            + THICKNESS / 2), new Point3D(width, (rows - 1) * ROW + Slate.HEIGHT + 2 * MARGIN,
+                            THICKNESS))
+                    : new Deck(depth, new Point3D(x, -along[depth] + Slate.HEIGHT / 2 + THICKNESS / 2,
+                            (rows - 1) * ROW_DEEP / 2), new Point3D(width, THICKNESS, deep(rows))));
+        }
+        return decks;
+    }
+
+    /** How far along the stack each layer sits: standing, back from the front; lying, up from the bottom. */
     private double[] along(final Placement placement) {
-        final double slope = Math.tan(Math.toRadians(-pitch));
-        final int deepest = placement.maxDepth();
-        final double[] along = new double[deepest + 1];
-        if (stance instanceof Stance.Standing) {
-            for (int depth = deepest - 1; depth >= 0; depth--) {
-                along[depth] = along[depth + 1] + Math.max(LEAST_GAP, placement.rowsOf(depth + 1) * ROW / slope);
-            }
-        } else {
-            for (int depth = 1; depth <= deepest; depth++) {
-                along[depth] = along[depth - 1]
-                        + Math.max(LEAST_GAP, placement.rowsOf(depth - 1) * ROW_DEEP * slope + Slate.HEIGHT);
-            }
+        final List<Integer> sequence = sequence(placement.maxDepth());
+        final double[] along = new double[placement.maxDepth() + 1];
+        for (int i = 1; i < sequence.size(); i++) {
+            final int before = sequence.get(i - 1);
+            along[sequence.get(i)] = along[before] + step(Math.max(1, placement.rowsOf(before)));
         }
         return along;
+    }
+
+    /** The layers by depth from the start of the stack: from the front when standing, from the bottom when lying. */
+    private List<Integer> sequence(final int deepest) {
+        final List<Integer> baseFirst = IntStream.rangeClosed(0, deepest).boxed().toList();
+        return stance instanceof Stance.Lying == order instanceof Order.BaseFar ? baseFirst : baseFirst.reversed();
+    }
+
+    /** How far the next layer sits from one of this many rows, for the whole of it to show past this one. */
+    private double step(final int rows) {
+        final double slope = Math.tan(Math.toRadians(-pitch));
+        return stance instanceof Stance.Standing
+                ? Math.max(LEAST_GAP, CLEARANCE * (((rows - 1) * ROW + Slate.HEIGHT + 2 * MARGIN) / slope
+                        + Slate.DEPTH + THICKNESS))
+                : Math.max(LEAST_RISE, CLEARANCE * (Slate.HEIGHT + THICKNESS + slope * deep(rows)));
+    }
+
+    /** How deep a lying platform of this many rows is. */
+    private double deep(final int rows) {
+        return (rows - 1) * ROW_DEEP + Slate.DEPTH + 2 * MARGIN;
     }
 }

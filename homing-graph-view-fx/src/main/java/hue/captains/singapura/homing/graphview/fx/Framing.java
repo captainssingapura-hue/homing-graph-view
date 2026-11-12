@@ -16,7 +16,7 @@ public record Framing() implements StatelessFunctionalObject {
      * The orbit at the angle given that centres the points and shows them all, with room around each.
      *
      * @param points      the points to show
-     * @param room        how far around each point must show too, such as half a slate's width
+     * @param room        how far around each point must show too, such as half a container's length
      * @param yaw         the camera's yaw, in degrees
      * @param pitch       its pitch, in degrees
      * @param fieldOfView the camera's vertical field of view, in degrees

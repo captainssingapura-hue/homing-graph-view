@@ -32,17 +32,27 @@ Every module ships a sources jar beside its jar; the studio's quality checks rea
 ## The view
 
 `new GraphView(graph)` is a JavaFX node like any other. It splits the graph into layers by depth, vertices on a cycle
-sharing a layer, lays each layer out flat in its block (see [the flat layout](#the-flat-layout)) and sets the blocks in
-the 3D space in a `Stance`, over a grid on the floor:
+sharing a layer, lays each layer out flat in its block (see [the flat layout](#the-flat-layout)) and stacks the layers
+in the 3D space over a grid on the floor, as a `Staging` says:
 
-- **Standing**, the default: each block upright like a monitor, rows going up, the layers one behind another with the
-  root's in front and the base's at the back.
-- **Lying**, `new GraphView(graph, focus, new Stance.Lying())`: each block flat like a floor, rows going back, the
-  layers one above another with the base's at the bottom.
+- **The stance.** `Stance.Standing`, the default: each block upright like a monitor, its containers hanging on a
+  board, the layers one behind another. `Stance.Lying`: each block flat, its containers sitting on a floor, the layers
+  one above another like the storeys of a building; the camera starts square on to it.
+- **The order.** `Order.BaseFar`, the default, puts level 0, the base's layer, at the far end of the stack: at the
+  back standing, at the bottom lying. `Order.BaseNear` puts it at the near end: in front standing, on top lying.
+- **The containers.** Each vertex is a container, `Container.Small`, `Half` or `Full` by length, as `Containers` says
+  of it (`Uniform` gives them all one size; full by default). Whatever its size, a container takes one slot: how big a
+  vertex is changes what is drawn, never the layout.
 
-Either way, each block is shaped to look about 16:9 from the starting camera, and each layer keeps far enough from the
-next that, looking straight in from the starting pitch, none hides another. Each vertex is a slate showing its ID on
-both faces, and each edge a rod. A readout in the corner names the camera's mode and what the keys do in it.
+```java
+new GraphView(graph, focus, new Staging().with(new Stance.Lying()).with(new Order.BaseNear()).with(containers));
+```
+
+Each layer's platform, its board or its floor, is coloured as a map colours its states, no two neighbours alike. Each
+block is shaped like a 16:9 screen, upright or laid flat, and each layer keeps far enough from the next that, from the
+starting camera, none hides another. Each container shows its vertex's ID on both its long faces, smaller on a short
+container, and each edge is a rod. A readout in the corner names the camera's mode, what the keys do in it and what is
+selected.
 
 The camera has three modes, and Tab steps through them, keeping the view:
 
@@ -100,8 +110,9 @@ After `mvn install`:
 mvn -pl homing-graph-view-demo javafx:run
 ```
 
-It shows `java.se` and every module it requires, read from the running JDK. To start from another module, or from
-every module of the JDK:
+It shows `java.se` and every module it requires, read from the running JDK, each module a container sized by its
+packages: small for up to 2, half for up to 9, full for more. To start from another module, or from every module of
+the JDK:
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args=java.desktop
@@ -111,10 +122,14 @@ mvn -pl homing-graph-view-demo javafx:run -Djavafx.args=java.desktop
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args=ALL-SYSTEM
 ```
 
-With the layers lying, like floors, rather than standing:
+With the layers lying, like storeys, rather than standing, and with level 0 on top rather than at the bottom:
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="java.se lying"
+```
+
+```bash
+mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="java.se lying near"
 ```
 
 ## Licence

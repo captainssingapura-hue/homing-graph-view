@@ -12,8 +12,8 @@
     <description>
         A window over GraphView, showing the JDK's own modules: a module and everything it requires, read from the
         running JDK. Not published. After mvn install at the top: mvn -pl homing-graph-view-demo javafx:run, or with
-        another root module, -Djavafx.args=java.desktop (or ALL-SYSTEM for every module), and with the layers lying
-        rather than standing, -Djavafx.args="java.se lying".
+        another root module, -Djavafx.args=java.desktop (or ALL-SYSTEM for every module). Add lying to stack the layers
+        as storeys rather than stand them, and near to put level 0 at the near end: -Djavafx.args="java.se lying near".
     </description>
 
     <properties>

@@ -25,9 +25,18 @@ public record Palette() implements StatelessFunctionalObject {
         };
     }
 
-    /** The text on a slate's faces in each state. */
+    /** The text on a container's faces in each state. */
     public Color text(final NodeState state) {
         return state instanceof NodeState.Dim ? Color.web("#6b7280") : Color.web("#eef2f7");
+    }
+
+    /**
+     * A layer's platform, by its depth: the soft colours a political map gives its states, taken in turn, so no two
+     * layers next to each other share one.
+     */
+    public Color platform(final int depth) {
+        final String[] map = {"#e3c9a8", "#b5cfa4", "#ecdc9c", "#a8c4de", "#d4b6d4", "#eeb7a3"};
+        return Color.web(map[Math.floorMod(depth, map.length)]);
     }
 
     /** A rod's colour in each state. */

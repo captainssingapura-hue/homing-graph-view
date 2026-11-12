@@ -31,7 +31,7 @@ public record Grounds(double minX, double maxX, double minZ, double maxZ, double
      * The grounds under slates centred at the points.
      *
      * @param centres    the slates' centres
-     * @param halfHeight half a slate's height
+     * @param halfHeight how far below a centre the stage reaches: half a container and its platform
      */
     public Grounds(final List<Point3D> centres, final double halfHeight) {
         this(centres.stream().mapToDouble(Point3D::getX).min().orElse(0) - BEYOND,
