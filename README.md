@@ -110,9 +110,13 @@ After `mvn install`:
 mvn -pl homing-graph-view-demo javafx:run
 ```
 
-It shows `java.se` and every module it requires, read from the running JDK, each module a container sized by its
-packages: small for up to 2, half for up to 9, full for more. To start from another module, or from every module of
-the JDK:
+A list down the left picks the demo to show: `java.se`, `java.desktop` or `jdk.jshell` and every module each requires,
+every module of the JDK, or the British Royal Family. Picking another draws it in place of the last. The JDK's modules
+are read from the running JDK, each a container sized by its packages: small for up to 2, half for up to 9, full for
+more.
+
+The arguments say which demo to start on and how to stage them all. To start on another module, which joins the list,
+or on every module of the JDK:
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args=java.desktop
