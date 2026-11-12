@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+        <artifactId>homing-graph-view</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>homing-graph-view-demo</artifactId>
+    <description>
+        A window over GraphView with a list of demos down the left: JDK modules, read from the running JDK, and the
+        British Royal Family. Not published. After mvn install at the top: mvn -pl homing-graph-view-demo javafx:run.
+        The arguments pick the demo to start on, as -Djavafx.args=java.desktop, ALL-SYSTEM or royal, and stage them
+        all: lying stacks the layers as storeys, and near puts level 0 at the near end, as -Djavafx.args="royal lying near".
+    </description>
+
+    <properties>
+        <!-- The module the demo starts from; override with -Djavafx.args=... -->
+        <javafx.args>java.se</javafx.args>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+            <artifactId>homing-graph-view-fx</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+            <artifactId>homing-graph-view-samples</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>hue.captains.singapura.homing.graphview.demo.Demo</mainClass>
+                    <commandlineArgs>${javafx.args}</commandlineArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
