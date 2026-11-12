@@ -1,9 +1,11 @@
 package hue.captains.singapura.homing.graphview.samples;
 
 import hue.captains.singapura.homing.graphview.layout.Ladder;
+import hue.captains.singapura.homing.graphview.layout.Layers;
 import hue.captains.singapura.homing.graphview.layout.LayersByDepth;
 import hue.captains.singapura.homing.graphview.layout.Placed;
 import hue.captains.singapura.homing.graphview.layout.Placement;
+import hue.captains.singapura.homing.graphview.model.Edge;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.enforcer.ContractViolation;
@@ -16,7 +18,8 @@ import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** The sample graphs: a made-up graph has the layers asked for, and the JDK's modules are read whole. */
+/** The sample graphs: a made-up graph has the layers asked for, the JDK's modules are read whole, and the royal family
+ * comes in its generations. */
 class SamplesTest {
 
     @Test
@@ -49,9 +52,26 @@ class SamplesTest {
     }
 
     @Test
+    void theRoyalFamilysLayersAreItsFourGenerations() {
+        final Graph family = new RoyalFamily().of();
+        assertEquals(31, family.vertices().size());
+        final List<List<String>> generations = new Layers().of(family).stream()
+                .map(layer -> layer.items().stream().map(Vertex::id).toList()).toList();
+        assertEquals(List.of(2, 6, 8, 15), generations.stream().map(List::size).toList());
+        assertEquals(List.of("Queen Elizabeth II", "Prince Philip"), generations.get(0));
+        // those who married in share their spouse's generation, through the marriage's two edges
+        assertEquals(List.of("King Charles III", "Diana Spencer", "Queen Camilla", "Princess Anne",
+                "Andrew Mountbatten-Windsor", "Prince Edward"), generations.get(1));
+        assertTrue(generations.get(2).containsAll(List.of("Prince William", "Zara Tindall", "James, Earl of Wessex")));
+        assertTrue(generations.get(3).containsAll(List.of("Prince George", "Princess Lilibet", "Adelaide")));
+        assertTrue(family.edges().items().contains(new Edge(new Vertex("Prince William"),
+                new Vertex("Diana Spencer"))), "a child points to each parent");
+    }
+
+    @Test
     void everySampleKeepsItsContract() {
         final OntologyEnforcer enforcer = new OntologyEnforcer();
-        final List<String> violations = List.of(JdkModules.class, MadeUp.class).stream()
+        final List<String> violations = List.of(JdkModules.class, MadeUp.class, RoyalFamily.class).stream()
                 .flatMap(type -> enforcer.enforce(type).stream())
                 .map(ContractViolation::message)
                 .toList();

@@ -51,7 +51,7 @@ final class Workbench implements Mutable {
      */
     Workbench(final String first) {
         graphs.setEditable(true);
-        graphs.getItems().setAll("java.se", "java.desktop", "jdk.jshell", "ALL-SYSTEM", "1 3 9 27 81",
+        graphs.getItems().setAll("java.se", "java.desktop", "jdk.jshell", "ALL-SYSTEM", "royal", "1 3 9 27 81",
                 "2 8 30 90", "4 16 60 200");
         graphs.setValue(first);
         screens.getItems().setAll("16:9", "21:9", "3:2", "4:3", "1:1");

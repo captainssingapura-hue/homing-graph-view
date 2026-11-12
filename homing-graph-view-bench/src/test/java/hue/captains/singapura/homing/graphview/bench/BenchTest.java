@@ -25,6 +25,7 @@ class BenchTest {
     void numbersNameAMadeUpGraphAndAnythingElseAJdkModule() {
         assertEquals(2 + 8 + 30, new Sources().of(" 2 8, 30 ").vertices().size());
         assertTrue(new Sources().of("java.se").vertices().size() > 10);
+        assertEquals(31, new Sources().of(" Royal ").vertices().size());
         assertThrows(IllegalArgumentException.class, () -> new Sources().of("no.such.module"));
     }
 

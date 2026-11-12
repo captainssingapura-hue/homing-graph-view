@@ -9,7 +9,7 @@ nothing here depends on the studio.
 |---|---|---|
 | `homing-graph-view-model` | the graph: `Vertex`, `Edge`, `Vertices`, `Edges` and `Graph`, vertices and edges only | Java 25, jOntology core |
 | `homing-graph-view-layout` | what is read from a graph before it is drawn: `Closure`, `LayersByDepth` and its `Placement`, `Layers`, `LayerInBlock` with its `Ladder` and `Arrangement`, and `Focus` with `Highlight` and the default, `Reachability` | the model, jOntology core |
-| `homing-graph-view-samples` | graphs to try the views on: `JdkModules`, the running JDK's modules, and `MadeUp`, layers of any size; not published | the model |
+| `homing-graph-view-samples` | graphs to try the views on: `JdkModules`, the running JDK's modules, `RoyalFamily`, the British Royal Family in four generations, and `MadeUp`, layers of any size; not published | the model |
 | `homing-graph-view-fx` | `GraphView`, an ordinary JavaFX node that draws a graph in 3D, with its camera, slates and rods | the layout, JavaFX 25 |
 | `homing-graph-view-demo` | a window over `GraphView` showing the JDK's own modules; not published | the view, the samples |
 | `homing-graph-view-bench` | a flat, 2D window over the layout, to look at it and polish it; not published | the layout, the samples, JavaFX 25 |
@@ -130,6 +130,14 @@ mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="java.se lying"
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="java.se lying near"
+```
+
+The British Royal Family, from Queen Elizabeth II and Prince Philip to their great-grandchildren, its generations as
+the layers and the eldest on top. A child points to each parent shown, and a marriage is a pair of edges, one each
+way, so those who married in share their spouse's generation:
+
+```bash
+mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="royal lying near"
 ```
 
 ## Licence

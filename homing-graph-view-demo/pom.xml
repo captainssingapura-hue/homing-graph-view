@@ -14,6 +14,7 @@
         running JDK. Not published. After mvn install at the top: mvn -pl homing-graph-view-demo javafx:run, or with
         another root module, -Djavafx.args=java.desktop (or ALL-SYSTEM for every module). Add lying to stack the layers
         as storeys rather than stand them, and near to put level 0 at the near end: -Djavafx.args="java.se lying near".
+        For the British Royal Family rather than JDK modules: -Djavafx.args="royal lying near".
     </description>
 
     <properties>
