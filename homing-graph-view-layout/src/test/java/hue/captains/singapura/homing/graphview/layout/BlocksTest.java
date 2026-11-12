@@ -7,6 +7,7 @@ import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.homing.graphview.model.Vertices;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -113,6 +114,24 @@ class BlocksTest {
         assertEquals(List.of(new Vertices(List.of(core, json)), new Vertices(List.of(web, text)),
                 new Vertices(List.of(app))), new Layers().of(graph));
         assertEquals(List.of(), new Layers().of(new Graph(new Vertices(List.of()), new Edges(List.of()))));
+    }
+
+    @Test
+    void layersByDepthSeatEachVertexAsItsLayersBlockDoes() {
+        final List<Vertex> wide = vertices(8);
+        final Vertex top = new Vertex("top");
+        final List<Vertex> all = new ArrayList<>(wide);
+        all.add(top);
+        final Graph graph = new Graph(new Vertices(all), new Edges(wide.stream().map(v -> new Edge(top, v)).toList()));
+        final Placement placement = new LayersByDepth(monitor).of(graph);
+        final Arrangement base = new LayerInBlock(monitor).of(new Vertices(wide));
+        for (final Seat seat : base.items()) {
+            final Placed placed = placement.of(seat.vertex()).orElseThrow();
+            assertEquals(List.of(0, seat.slot().lane(), seat.slot().row()),
+                    List.of(placed.depth(), placed.lane(), placed.row()));
+        }
+        assertEquals(new Placed(top, 1, 0, 0), placement.of(top).orElseThrow());
+        assertEquals(List.of(3, 1), List.of(placement.rowsOf(0), placement.rowsOf(1)));
     }
 
     private Arrangement arranged(final int count) {

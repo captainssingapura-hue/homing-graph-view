@@ -25,9 +25,12 @@ class LayoutTest {
     private final Graph estate = graph(List.of(app, web, text, core, json),
             new Edge(app, web), new Edge(app, core), new Edge(web, text), new Edge(text, core));
 
+    /** Each layer in a block of 230 by 80 slots on a 16:9 screen, growing by half again. */
+    private final LayersByDepth layering = new LayersByDepth(new Ladder(230.0 / 80, 16.0 / 9, 1.5));
+
     @Test
     void depthIsOneMoreThanTheDeepestDependency() {
-        final Placement placement = new LayersByDepth().of(estate);
+        final Placement placement = layering.of(estate);
         assertEquals(3, depth(placement, app));
         assertEquals(2, depth(placement, web));
         assertEquals(1, depth(placement, text));
@@ -37,17 +40,19 @@ class LayoutTest {
     }
 
     @Test
-    void eachLayerIsCentredInTheGraphsOrder() {
-        final Placement placement = new LayersByDepth().of(estate);
-        assertEquals(-0.5, lane(placement, core));
-        assertEquals(0.5, lane(placement, json));
-        assertEquals(0.0, lane(placement, app));
-        assertTrue(placement.items().stream().allMatch(placed -> placed.row() == 0));
+    void eachLayerIsArrangedInItsOwnBlockInTheGraphsOrder() {
+        final Placement placement = layering.of(estate);
+        // core and json share layer 0: a block one slot wide and two high, core on top as it comes first
+        assertEquals(List.of(0.0, 0.0), List.of(lane(placement, core), lane(placement, json)));
+        assertEquals(List.of(1, 0), List.of(row(placement, core), row(placement, json)));
+        assertEquals(List.of(0.0, 0), List.of(lane(placement, app), row(placement, app)));
+        assertEquals(List.of(2, 1, 1, 1, 0), List.of(placement.rowsOf(0), placement.rowsOf(1), placement.rowsOf(2),
+                placement.rowsOf(3), placement.rowsOf(4)));
     }
 
     @Test
     void thePlacementKeepsTheGraphsOrder() {
-        final Placement placement = new LayersByDepth().of(estate);
+        final Placement placement = layering.of(estate);
         assertEquals(estate.vertices().items(), placement.items().stream().map(Placed::vertex).toList());
     }
 
@@ -55,7 +60,7 @@ class LayoutTest {
     void verticesOnACycleShareALayer() {
         final Graph cyclic = graph(List.of(app, web, text, core),
                 new Edge(app, web), new Edge(web, text), new Edge(text, web), new Edge(text, core));
-        final Placement placement = new LayersByDepth().of(cyclic);
+        final Placement placement = layering.of(cyclic);
         assertEquals(0, depth(placement, core));
         assertEquals(1, depth(placement, web));
         assertEquals(1, depth(placement, text));
@@ -64,9 +69,10 @@ class LayoutTest {
 
     @Test
     void aGraphWithNoEdgesIsOneLayer() {
-        final Placement placement = new LayersByDepth().of(graph(List.of(app, core)));
+        final Placement placement = layering.of(graph(List.of(app, core)));
         assertEquals(0, placement.maxDepth());
-        assertEquals(List.of(-0.5, 0.5), placement.items().stream().map(Placed::lane).toList());
+        assertEquals(List.of(0.0, 0.0), placement.items().stream().map(Placed::lane).toList());
+        assertEquals(List.of(1, 0), placement.items().stream().map(Placed::row).toList());
     }
 
     @Test
@@ -120,5 +126,9 @@ class LayoutTest {
 
     private double lane(final Placement placement, final Vertex vertex) {
         return placement.of(vertex).orElseThrow().lane();
+    }
+
+    private int row(final Placement placement, final Vertex vertex) {
+        return placement.of(vertex).orElseThrow().row();
     }
 }

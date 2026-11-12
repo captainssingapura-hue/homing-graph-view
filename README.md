@@ -76,6 +76,10 @@ centred.
 An `Arrangement` is the block and a `Seat` for each vertex, a slot in lanes and rows, not coordinates: what a slot
 measures is up to whatever draws it.
 
+`new LayersByDepth(ladder).of(graph)` puts the two together for a whole graph: it splits the graph into layers and
+lays each out in its own block, giving each vertex a `Placed` with its depth and its slot's lane and row. That one
+`Placement` is what the 3D view draws from, whichever way it sets the blocks.
+
 ## Bench
 
 After `mvn install`, a flat, 2D window over the layout, apart from the 3D view, to look at the layout and polish it:

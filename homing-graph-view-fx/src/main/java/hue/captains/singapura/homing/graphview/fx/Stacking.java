@@ -1,25 +1,24 @@
 package hue.captains.singapura.homing.graphview.fx;
 
-import hue.captains.singapura.homing.graphview.layout.Arrangement;
 import hue.captains.singapura.homing.graphview.layout.Ladder;
-import hue.captains.singapura.homing.graphview.layout.LayerInBlock;
-import hue.captains.singapura.homing.graphview.layout.Seat;
+import hue.captains.singapura.homing.graphview.layout.Placed;
+import hue.captains.singapura.homing.graphview.layout.Placement;
 import hue.captains.singapura.homing.graphview.model.Vertex;
-import hue.captains.singapura.homing.graphview.model.Vertices;
 import hue.captains.singapura.tao.ontology.FunctionalObject;
 import javafx.geometry.Point3D;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Sets each layer, laid out flat in its block, in the 3D space in a stance, and stacks the layers. A slot is a slate and
- * the room around it: {@value #COLUMN} across, and {@value #ROW} up when standing or {@value #ROW_DEEP} back when lying.
+ * Sets a placement's layers, each flat in its block, in the 3D space in a stance, and stacks them. A slot is a slate
+ * and the room around it: {@value #COLUMN} across, and {@value #ROW} up when standing or {@value #ROW_DEEP} back when
+ * lying.
  *
- * <p>The ladder shapes a block to look 16:9 from the starting camera: a standing block is 16:9; a lying one is deeper,
- * as the camera sees its depth foreshortened by the sine of its pitch. Each layer then keeps clear of the next as the
- * starting camera sees them, looking straight in at its pitch: a standing layer stands far enough behind the one in
- * front to show over it, and a lying layer lies high enough above the one below to show beyond it.
+ * <p>The ladder, for the layout to lay the layers out with, shapes a block to look 16:9 from the starting camera: a
+ * standing block is 16:9; a lying one is deeper, as the camera sees its depth foreshortened by the sine of its pitch.
+ * Each layer keeps clear of the next as the starting camera sees them, looking straight in at its pitch: a standing
+ * layer stands far enough behind the one in front to show over it, and a lying layer lies high enough above the one
+ * below to show beyond it.
  *
  * @param stance how the blocks are set
  * @param pitch  the starting camera's pitch, in degrees, negative looking down
@@ -44,33 +43,39 @@ record Stacking(Stance stance, double pitch) implements FunctionalObject {
     }
 
     /**
-     * Where each slate is centred.
+     * Where each slate is centred, in the placement's order.
      *
-     * @param layers the graph's layers, the base's first
+     * @param placement the layers laid out with this stacking's ladder
      */
-    Map<Vertex, Point3D> of(final List<Vertices> layers) {
-        final LayerInBlock inBlock = new LayerInBlock(ladder());
-        final List<Arrangement> blocks = layers.stream().map(inBlock::of).toList();
+    Map<Vertex, Point3D> of(final Placement placement) {
+        final double[] along = along(placement);
         final Map<Vertex, Point3D> centres = new LinkedHashMap<>();
-        final double slope = Math.tan(Math.toRadians(-pitch));
-        double along = 0;
-        if (stance instanceof Stance.Standing) {
-            for (int depth = blocks.size() - 1; depth >= 0; depth--) {
-                for (final Seat seat : blocks.get(depth).items()) {
-                    centres.put(seat.vertex(), new Point3D(seat.slot().lane() * COLUMN, -seat.slot().row() * ROW,
-                            along));
-                }
-                along += Math.max(LEAST_GAP, blocks.get(depth).block().rows() * ROW / slope);
-            }
-        } else {
-            for (final Arrangement block : blocks) {
-                for (final Seat seat : block.items()) {
-                    centres.put(seat.vertex(), new Point3D(seat.slot().lane() * COLUMN, -along,
-                            seat.slot().row() * ROW_DEEP));
-                }
-                along += Math.max(LEAST_GAP, block.block().rows() * ROW_DEEP * slope + Slate.HEIGHT);
-            }
+        for (final Placed placed : placement.items()) {
+            final double x = placed.lane() * COLUMN;
+            centres.put(placed.vertex(), stance instanceof Stance.Standing
+                    ? new Point3D(x, -placed.row() * ROW, along[placed.depth()])
+                    : new Point3D(x, -along[placed.depth()], placed.row() * ROW_DEEP));
         }
         return centres;
+    }
+
+    /**
+     * How far along the stack each layer sits: standing, back from the root's layer at 0; lying, up from the base's.
+     */
+    private double[] along(final Placement placement) {
+        final double slope = Math.tan(Math.toRadians(-pitch));
+        final int deepest = placement.maxDepth();
+        final double[] along = new double[deepest + 1];
+        if (stance instanceof Stance.Standing) {
+            for (int depth = deepest - 1; depth >= 0; depth--) {
+                along[depth] = along[depth + 1] + Math.max(LEAST_GAP, placement.rowsOf(depth + 1) * ROW / slope);
+            }
+        } else {
+            for (int depth = 1; depth <= deepest; depth++) {
+                along[depth] = along[depth - 1]
+                        + Math.max(LEAST_GAP, placement.rowsOf(depth - 1) * ROW_DEEP * slope + Slate.HEIGHT);
+            }
+        }
+        return along;
     }
 }

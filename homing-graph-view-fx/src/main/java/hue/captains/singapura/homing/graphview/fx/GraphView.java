@@ -2,7 +2,7 @@ package hue.captains.singapura.homing.graphview.fx;
 
 import hue.captains.singapura.homing.graphview.layout.Focus;
 import hue.captains.singapura.homing.graphview.layout.Highlight;
-import hue.captains.singapura.homing.graphview.layout.Layers;
+import hue.captains.singapura.homing.graphview.layout.LayersByDepth;
 import hue.captains.singapura.homing.graphview.layout.Reachability;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
@@ -75,7 +75,8 @@ public final class GraphView extends Region implements Mutable {
     public GraphView(final Graph graph, final Focus focus, final Stance stance) {
         this.graph = graph;
         this.focus = focus;
-        final Map<Vertex, Point3D> placed = new Stacking(stance, PITCH).of(new Layers().of(graph));
+        final Stacking stacking = new Stacking(stance, PITCH);
+        final Map<Vertex, Point3D> placed = stacking.of(new LayersByDepth(stacking.ladder()).of(graph));
         final Font font = Font.font(FONT_SIZE);
         placed.forEach((vertex, centre) -> slates.put(vertex, new Slate(vertex, centre, font)));
         centres.addAll(placed.values());

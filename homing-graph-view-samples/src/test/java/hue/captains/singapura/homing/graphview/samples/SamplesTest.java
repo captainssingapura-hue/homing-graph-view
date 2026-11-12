@@ -1,5 +1,6 @@
 package hue.captains.singapura.homing.graphview.samples;
 
+import hue.captains.singapura.homing.graphview.layout.Ladder;
 import hue.captains.singapura.homing.graphview.layout.LayersByDepth;
 import hue.captains.singapura.homing.graphview.layout.Placed;
 import hue.captains.singapura.homing.graphview.layout.Placement;
@@ -22,7 +23,7 @@ class SamplesTest {
     void aMadeUpGraphHasTheLayersAskedFor() {
         final List<Integer> sizes = List.of(4, 1, 9, 30, 2);
         final Graph graph = new MadeUp().of(sizes);
-        final Placement placement = new LayersByDepth().of(graph);
+        final Placement placement = new LayersByDepth(new Ladder(230.0 / 80, 16.0 / 9, 1.5)).of(graph);
         final Map<Integer, Integer> counted = new TreeMap<>();
         placement.items().forEach(placed -> counted.merge(placed.depth(), 1, Integer::sum));
         assertEquals(List.of(4, 1, 9, 30, 2), List.copyOf(counted.values()));
@@ -41,7 +42,7 @@ class SamplesTest {
         final Graph graph = new JdkModules().of("java.se");
         final List<String> ids = graph.vertices().items().stream().map(Vertex::id).toList();
         assertTrue(ids.containsAll(List.of("java.se", "java.base", "java.desktop")), ids.toString());
-        final Placement placement = new LayersByDepth().of(graph);
+        final Placement placement = new LayersByDepth(new Ladder(230.0 / 80, 16.0 / 9, 1.5)).of(graph);
         assertEquals(0, placement.of(new Vertex("java.base")).map(Placed::depth).orElseThrow());
         assertEquals(placement.maxDepth(), placement.of(new Vertex("java.se")).map(Placed::depth).orElseThrow());
         assertThrows(IllegalArgumentException.class, () -> new JdkModules().of("no.such.module"));
