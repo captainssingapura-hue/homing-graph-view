@@ -93,7 +93,7 @@ final class Showcase implements Mutable {
     private void show(final Exhibit exhibit) {
         try {
             final Graph graph = exhibit.graph();
-            final GraphView view = new GraphView(graph, new Reachability(), staging.with(exhibit.containers()));
+            final GraphView view = new GraphView(graph, new Reachability(), staging.with(exhibit.shapes()));
             root.setCenter(view);
             title.accept("homing-graph-view demo: " + exhibit.title(graph) + ", layers " + where());
             view.requestFocus();

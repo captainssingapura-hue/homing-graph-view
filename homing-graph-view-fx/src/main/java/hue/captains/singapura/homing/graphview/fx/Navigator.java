@@ -102,7 +102,7 @@ final class Navigator implements Mutable {
 
     /** Two lines for a readout: the mode with what it shows, and what the keys do in it. */
     String readout() {
-        final String select = "click a container to select it · Esc to clear";
+        final String select = "click a figure to select it · Esc to clear";
         if (!free) {
             return "ORBIT  ·  drag to turn · right-drag or Shift-drag to pan · wheel to zoom · H: home\n"
                     + select + " · Tab or W: fly · 6: walk in";

@@ -16,7 +16,6 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,17 +23,16 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a container of its size, its
- * layer by depth laid out flat in a block on a platform coloured for the layer, and the layers stacked as a
- * {@link Staging} says: standing one behind another or lying one above another, level 0 at either end; all over a
- * grid on the floor. Each edge is a rod. The camera starts orbiting, framed on the whole graph, and can fly or drone
+ * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a figure, a container unless
+ * the staging's shapes say otherwise, its layer by depth laid out flat in a block on a platform coloured for the layer,
+ * and the layers stacked as a {@link Staging} says: standing one behind another or lying one above another, level 0
+ * at either end; all over a grid on the floor. Each edge is a rod. The camera starts orbiting, framed on the whole graph, and can fly or drone
  * through it; a readout in the corner says which, what the keys do and what is selected. What a selection means is
  * asked of a Focus, reachability unless another is given.
  */
 public final class GraphView extends Region implements Mutable {
 
     private static final double PITCH = -24;
-    private static final double FONT_SIZE = 15;
     private static final double READOUT_INSET = 10;
 
     private final Graph graph;
@@ -49,6 +47,7 @@ public final class GraphView extends Region implements Mutable {
     private final Navigator navigator;
     private final Label readout = new Label();
     private final double yaw;
+    private final Room room;
     private Optional<Highlight> selection = Optional.empty();
     private boolean framed;
 
@@ -73,17 +72,17 @@ public final class GraphView extends Region implements Mutable {
      *
      * @param graph   the graph to draw
      * @param focus   what a selection means
-     * @param staging how the layers are set and stacked, and which container each vertex comes in
+     * @param staging how the layers are set and stacked, and what each vertex is drawn as
      */
     public GraphView(final Graph graph, final Focus focus, final Staging staging) {
         this.graph = graph;
         this.focus = focus;
-        final Stacking stacking = new Stacking(staging.stance(), staging.order(), PITCH);
+        final Shapes shapes = staging.shapes();
+        final Stacking stacking = new Stacking(staging.stance(), staging.order(), PITCH, shapes.room());
         final Placement placement = new LayersByDepth(stacking.ladder()).of(graph);
         final Map<Vertex, Point3D> placed = stacking.of(placement);
-        final Font font = Font.font(FONT_SIZE);
-        placed.forEach((vertex, centre) -> slates.put(vertex,
-                new Slate(vertex, centre, font, staging.containers().of(vertex))));
+        placed.forEach((vertex, centre) -> slates.put(vertex, new Slate(vertex, centre, shapes.of(vertex))));
+        room = shapes.room();
         yaw = stacking.yaw();
         centres.addAll(placed.values());
         rods = new Rods(graph.edges(), placed);
@@ -156,7 +155,7 @@ public final class GraphView extends Region implements Mutable {
     }
 
     private Orbit framing() {
-        return new Framing().of(centres, Slate.LENGTH / 2 + Stacking.MARGIN, yaw, PITCH, rig.fieldOfView(),
+        return new Framing().of(centres, room.width() / 2 + Stacking.MARGIN, yaw, PITCH, rig.fieldOfView(),
                 getWidth() / Math.max(getHeight(), 1));
     }
 

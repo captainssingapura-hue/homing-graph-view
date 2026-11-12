@@ -40,20 +40,22 @@ in the 3D space over a grid on the floor, as a `Staging` says:
   one above another like the storeys of a building; the camera starts square on to it.
 - **The order.** `Order.BaseFar`, the default, puts level 0, the base's layer, at the far end of the stack: at the
   back standing, at the bottom lying. `Order.BaseNear` puts it at the near end: in front standing, on top lying.
-- **The containers.** Each vertex is a container, `Container.Small`, `Half` or `Full` by length, as `Containers` says
-  of it (`Uniform` gives them all one size; full by default). Whatever its size, a container takes one slot: how big a
-  vertex is changes what is drawn, never the layout.
+- **The shapes.** `Shapes`, a FunctionalObject, says what each vertex is drawn as: a `Figure` for a vertex, a node
+  facing the camera with the parts a selection colours, and the `Room` every figure fits in, which the layout sizes
+  its slots by. The default, `ContainerShapes`, draws containers, `Container.Small`, `Half` or `Full` by length, as
+  `Containers` says of each vertex (`Uniform` gives them all one size; full by default), each showing its vertex's ID
+  on both long faces. Whatever its size, a figure takes one slot: how big a vertex is changes what is drawn, never the
+  layout.
 
 ```java
-new GraphView(graph, focus, new Staging().with(new Stance.Lying()).with(new Order.BaseNear()).with(containers));
+new GraphView(graph, focus, new Staging().with(new Stance.Lying()).with(new Order.BaseNear()).with(shapes));
 ```
 
 Each layer's platform, its board or its floor, is coloured as a map colours its states, no two neighbours alike. Each
 block is shaped like a 16:9 screen, upright or laid flat, and centred on the stack's axis, so the stack looks even from
-the side as from the front; each layer keeps far enough from the next that, from the starting camera, none hides
-another. Each container shows its vertex's ID on both its long faces, smaller on a short
-container, and each edge is a rod. A readout in the corner names the camera's mode, what the keys do in it and what is
-selected.
+the side as from the front; each layer keeps far enough from the next, and lying, each row from the one in front, that
+from the starting camera none hides another. A selection colours the figures it reaches and darkens the rest, and each
+edge is a rod. A readout in the corner names the camera's mode, what the keys do in it and what is selected.
 
 The camera has three modes, and Tab steps through them, keeping the view:
 
@@ -139,7 +141,9 @@ mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="java.se lying near"
 
 The British Royal Family, from Queen Elizabeth II and Prince Philip to their great-grandchildren, its generations as
 the layers and the eldest on top. A child points to each parent shown, and a marriage is a pair of edges, one each
-way, so those who married in share their spouse's generation:
+way, so those who married in share their spouse's generation. It shows a shape provider of its own, `Portraits`: each
+person is a gilt photo frame with their name on a plaque, holding a painted placeholder for their title, a crowned
+king or queen, a prince in a coronet, a princess in a tiara, or a plain head and shoulders for anyone untitled:
 
 ```bash
 mvn -pl homing-graph-view-demo javafx:run -Djavafx.args="royal lying near"

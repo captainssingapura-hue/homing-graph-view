@@ -3,92 +3,80 @@ package hue.captains.singapura.homing.graphview.fx;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.Mutable;
 import javafx.geometry.Point3D;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Label;
-import javafx.scene.control.OverrunStyle;
+import javafx.scene.Node;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.transform.Rotate;
+import javafx.scene.shape.Shape3D;
 import javafx.scene.transform.Translate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A vertex drawn as its container: a box as long as its container's size says, with a face in front and one behind, so
- * it reads from either side. With no attributes, each face shows the vertex's ID, in smaller type if the face is too
- * short for it. The node carries its vertex as user data, which is how a click finds it.
+ * A vertex's figure set in its slot: the view's hold on it, to place it, to find its vertex from a click, which reads
+ * the vertex from the node's user data, and to show its state. Nothing selected, its tinted parts keep their own
+ * colours; otherwise they take the state's colour, and a dimmed figure has its flat parts, its pictures and its words,
+ * darkened and greyed too. Nothing is made see-through: a scene in depth draws see-through parts out of order.
  */
 final class Slate implements Mutable {
 
-    /** A full container's length, and every container's height and depth, in scene units. */
-    static final double LENGTH = 190;
-    static final double HEIGHT = 46;
-    static final double DEPTH = 44;
-    private static final double MARGIN = 8;
-    private static final double LIFT = 1.5;
-    private static final double SMALLEST_TYPE = 9;
+    /** How a dimmed figure's flat parts are greyed and darkened. */
+    private static final double GREYED = -0.7;
+    private static final double DARKENED = -0.55;
 
     private final Group node;
-    private final PhongMaterial material = new PhongMaterial();
-    private final Label front;
-    private final Label back;
+    private final List<PhongMaterial> tinted;
+    private final List<Color> own;
+    private final List<Node> flat = new ArrayList<>();
 
     /**
-     * A container for the vertex, centred on the point.
+     * The figure for the vertex, centred on the point.
      *
-     * @param vertex    the vertex
-     * @param centre    where its centre is in the scene
-     * @param font      the faces' font, made smaller if a face is too short for the ID
-     * @param container its size
+     * @param vertex the vertex
+     * @param centre where its centre is in the scene
+     * @param figure what it is drawn as
      */
-    Slate(final Vertex vertex, final Point3D centre, final Font font, final Container container) {
-        final double length = LENGTH * container.length();
-        final Box box = new Box(length, HEIGHT, DEPTH);
-        box.setMaterial(material);
-        final double width = length - 2 * MARGIN;
-        final Font fitted = fitted(vertex.id(), font, width);
-        front = face(vertex.id(), fitted, width, -(DEPTH / 2 + LIFT), 0);
-        back = face(vertex.id(), fitted, width, DEPTH / 2 + LIFT, 180);
-        node = new Group(box, front, back);
+    Slate(final Vertex vertex, final Point3D centre, final Figure figure) {
+        node = new Group(figure.node());
         node.setUserData(vertex);
         node.getTransforms().setAll(new Translate(centre.getX(), centre.getY(), centre.getZ()));
+        tinted = figure.tinted().stream().map(this::material).toList();
+        own = tinted.stream().map(PhongMaterial::getDiffuseColor).toList();
+        collect(figure.node());
     }
 
-    /** The container's node in the scene. */
+    /** The figure's node in the scene. */
     Group node() {
         return node;
     }
 
-    /** Draws the container in a state. */
+    /** Draws the figure in a state. */
     void paint(final NodeState state, final Palette palette) {
-        material.setDiffuseColor(palette.slate(state));
-        material.setSpecularColor(palette.slate(state).brighter());
-        front.setTextFill(palette.text(state));
-        back.setTextFill(palette.text(state));
+        for (int i = 0; i < tinted.size(); i++) {
+            final Color colour = state instanceof NodeState.Idle ? own.get(i) : palette.slate(state);
+            tinted.get(i).setDiffuseColor(colour);
+        }
+        flat.forEach(part -> part.setEffect(state instanceof NodeState.Dim ? new ColorAdjust(0, GREYED, DARKENED, 0)
+                : null));
     }
 
-    /** The font, made smaller, down to the smallest type, until the text fits the width. */
-    private Font fitted(final String text, final Font font, final double width) {
-        final Text probe = new Text(text);
-        probe.setFont(font);
-        final double needed = probe.getLayoutBounds().getWidth();
-        return needed <= width ? font
-                : Font.font(font.getFamily(), Math.max(SMALLEST_TYPE, font.getSize() * width / needed));
+    /** The figure's flat parts, all but its solids and the groups that hold them. */
+    private void collect(final Node part) {
+        if (part instanceof Group group) {
+            group.getChildren().forEach(this::collect);
+        } else if (!(part instanceof Shape3D)) {
+            flat.add(part);
+        }
     }
 
-    /** A face just off the box, turned to look out of its side. */
-    private Label face(final String text, final Font font, final double width, final double z, final double turn) {
-        final Label label = new Label(text);
-        label.setFont(font);
-        label.setAlignment(Pos.CENTER);
-        label.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
-        label.setMinSize(width, HEIGHT);
-        label.setPrefSize(width, HEIGHT);
-        label.setMaxSize(width, HEIGHT);
-        label.setMouseTransparent(true);
-        label.getTransforms().setAll(new Translate(0, 0, z), new Rotate(turn, Rotate.Y_AXIS),
-                new Translate(-width / 2, -HEIGHT / 2, 0));
-        return label;
+    /** A part's material, given one of its own if it has none the view can colour. */
+    private PhongMaterial material(final Shape3D part) {
+        if (part.getMaterial() instanceof PhongMaterial phong) {
+            return phong;
+        }
+        final PhongMaterial phong = new PhongMaterial(Color.GRAY);
+        part.setMaterial(phong);
+        return phong;
     }
 }

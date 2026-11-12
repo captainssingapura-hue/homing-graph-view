@@ -1,14 +1,15 @@
 package hue.captains.singapura.homing.graphview.demo;
 
-import hue.captains.singapura.homing.graphview.fx.Container;
-import hue.captains.singapura.homing.graphview.fx.Containers;
-import hue.captains.singapura.homing.graphview.fx.Uniform;
+import hue.captains.singapura.homing.graphview.fx.ContainerShapes;
+import hue.captains.singapura.homing.graphview.fx.Shapes;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.samples.JdkModules;
 import hue.captains.singapura.homing.graphview.samples.RoyalFamily;
 import hue.captains.singapura.tao.ontology.Scalar;
 
-/** A graph the demo can show: what the list calls it, the graph, how big its vertices are, and the window's title. */
+/**
+ * A graph the demo can show: what the list calls it, the graph, what its vertices are drawn as, and the window's title.
+ */
 sealed interface Exhibit extends Scalar {
 
     /** What the list of demos calls it. */
@@ -17,8 +18,8 @@ sealed interface Exhibit extends Scalar {
     /** The graph. */
     Graph graph();
 
-    /** Which container each vertex comes in. */
-    Containers containers();
+    /** What each vertex is drawn as. */
+    Shapes shapes();
 
     /** What the window says of the graph. */
     String title(Graph graph);
@@ -43,8 +44,8 @@ sealed interface Exhibit extends Scalar {
         }
 
         @Override
-        public Containers containers() {
-            return new PackageCounts();
+        public Shapes shapes() {
+            return new ContainerShapes(new PackageCounts());
         }
 
         @Override
@@ -54,7 +55,7 @@ sealed interface Exhibit extends Scalar {
         }
     }
 
-    /** The British Royal Family, its generations as the layers, each person in a full container. */
+    /** The British Royal Family, its generations as the layers, each person a portrait in a frame. */
     record Royals() implements Exhibit {
 
         @Override
@@ -68,8 +69,8 @@ sealed interface Exhibit extends Scalar {
         }
 
         @Override
-        public Containers containers() {
-            return new Uniform(new Container.Full());
+        public Shapes shapes() {
+            return new Portraits();
         }
 
         @Override
