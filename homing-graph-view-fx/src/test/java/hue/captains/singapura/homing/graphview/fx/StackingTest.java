@@ -51,7 +51,7 @@ class StackingTest {
             final Point3D centre = centres.get(placed.vertex());
             assertEquals(firstOf(centres, placed.depth()).getZ(), centre.getZ(), CLOSE, "one plane, facing us");
             assertEquals(placed.lane() * Stacking.COLUMN, centre.getX(), CLOSE, "lanes across");
-            assertEquals(-placed.row() * Stacking.ROW, centre.getY(), CLOSE, "rows up");
+            assertEquals(-middled(placement, placed) * Stacking.ROW, centre.getY(), CLOSE, "rows up, centred");
         }
     }
 
@@ -63,7 +63,8 @@ class StackingTest {
             final Point3D centre = centres.get(placed.vertex());
             assertEquals(firstOf(centres, placed.depth()).getY(), centre.getY(), CLOSE, "one level plane");
             assertEquals(placed.lane() * Stacking.COLUMN, centre.getX(), CLOSE, "lanes across");
-            assertEquals(placed.row() * Stacking.ROW_DEEP, centre.getZ(), CLOSE, "rows going back");
+            assertEquals(middled(placement, placed) * Stacking.ROW_DEEP, centre.getZ(), CLOSE,
+                    "rows going back, centred");
         }
     }
 
@@ -101,6 +102,27 @@ class StackingTest {
                         assertEquals(high.getY(), deck.low().getY(), CLOSE, "sitting on the floor");
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    void everyLayerIsCentredOnTheStacksAxisSoItLooksEvenFromTheSide() {
+        for (final Stacking stacking : every) {
+            final Placement placement = placement(stacking);
+            final boolean standing = stacking.stance() instanceof Stance.Standing;
+            for (final Deck deck : stacking.decks(placement)) {
+                // the axis runs back through the stack when standing, up it when lying
+                assertEquals(0, deck.x(), CLOSE, stacking + ": layer " + deck.depth() + " across");
+                assertEquals(0, standing ? deck.y() : deck.z(), CLOSE, stacking + ": layer " + deck.depth());
+            }
+            final Map<Vertex, Point3D> centres = stacking.of(placement);
+            for (final Vertices layer : layers) {
+                final double highest = layer.items().stream().map(centres::get)
+                        .mapToDouble(centre -> standing ? -centre.getY() : centre.getZ()).max().orElseThrow();
+                final double lowest = layer.items().stream().map(centres::get)
+                        .mapToDouble(centre -> standing ? -centre.getY() : centre.getZ()).min().orElseThrow();
+                assertEquals(0, highest + lowest, CLOSE, stacking + ": rows reach as far either side");
             }
         }
     }
@@ -196,6 +218,11 @@ class StackingTest {
         return one[0].getX() < other[1].getX() - CLOSE && other[0].getX() < one[1].getX() - CLOSE
                 && one[0].getY() < other[1].getY() - CLOSE && other[0].getY() < one[1].getY() - CLOSE
                 && one[0].getZ() < other[1].getZ() - CLOSE && other[0].getZ() < one[1].getZ() - CLOSE;
+    }
+
+    /** How many rows a placed vertex is from the middle of its layer's rows. */
+    private double middled(final Placement placement, final Placed placed) {
+        return placed.row() - (placement.rowsOf(placed.depth()) - 1) / 2.0;
     }
 
     private Placement placement(final Stacking stacking) {

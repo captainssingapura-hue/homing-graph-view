@@ -15,12 +15,14 @@ import java.util.stream.IntStream;
 /**
  * Sets a placement's layers, each flat in its block, in the 3D space, and stacks them in order, each on a platform. A
  * slot is a container's room: {@value #COLUMN} across, and {@value #ROW} up when standing or {@value #ROW_DEEP} back
- * when lying. Standing, a layer's containers hang on a board behind them; lying, they sit on a floor.
+ * when lying. Standing, a layer's containers hang on a board behind them; lying, they sit on a floor. Every layer is
+ * centred on the stack's axis, a straight line through the middle of every platform: back through the stack when
+ * standing, up it when lying, so the stack looks even from the side as from the front.
  *
- * <p>A block is shaped like a 16:9 screen, upright when standing and laid flat when lying. Each layer keeps clear of the
- * next as the starting camera sees them, looking straight in at its pitch: a standing layer stands far enough behind
- * the one in front to show over it, and a lying layer lies high enough above the one below for the whole floor below to
- * show under it.
+ * <p>A block is shaped like a 16:9 screen, upright when standing and laid flat when lying. Each layer keeps clear of
+ * the next as the starting camera sees them, looking straight in at its pitch: a standing layer stands far enough
+ * behind the one in front to show over it, and a lying layer lies high enough above the one below for the whole floor
+ * below to show under it; how far depends on both, as each reaches half its size either side of the axis.
  *
  * @param stance how the blocks are set
  * @param order  which end of the stack level 0 goes at
@@ -69,15 +71,17 @@ record Stacking(Stance stance, Order order, double pitch) implements FunctionalO
         final Map<Vertex, Point3D> centres = new LinkedHashMap<>();
         for (final Placed placed : placement.items()) {
             final double x = placed.lane() * COLUMN;
+            final double fromMiddle = placed.row() - (Math.max(1, placement.rowsOf(placed.depth())) - 1) / 2.0;
             centres.put(placed.vertex(), stance instanceof Stance.Standing
-                    ? new Point3D(x, -placed.row() * ROW, along[placed.depth()])
-                    : new Point3D(x, -along[placed.depth()], placed.row() * ROW_DEEP));
+                    ? new Point3D(x, -fromMiddle * ROW, along[placed.depth()])
+                    : new Point3D(x, -along[placed.depth()], fromMiddle * ROW_DEEP));
         }
         return centres;
     }
 
     /**
-     * Each layer's platform, level 0's first: as wide as its containers reach, with a margin all round.
+     * Each layer's platform, level 0's first: as wide as its containers reach, with a margin all round, centred on the
+     * stack's axis.
      *
      * @param placement the layers laid out with this stacking's ladder
      */
@@ -94,11 +98,10 @@ record Stacking(Stance stance, Order order, double pitch) implements FunctionalO
             final double width = (high - low) * COLUMN + Slate.LENGTH + 2 * MARGIN;
             final int rows = Math.max(1, placement.rowsOf(depth));
             decks.add(stance instanceof Stance.Standing
-                    ? new Deck(depth, new Point3D(x, -(rows - 1) * ROW / 2, along[depth] + Slate.DEPTH / 2
-                            + THICKNESS / 2), new Point3D(width, (rows - 1) * ROW + Slate.HEIGHT + 2 * MARGIN,
-                            THICKNESS))
-                    : new Deck(depth, new Point3D(x, -along[depth] + Slate.HEIGHT / 2 + THICKNESS / 2,
-                            (rows - 1) * ROW_DEEP / 2), new Point3D(width, THICKNESS, deep(rows))));
+                    ? new Deck(depth, new Point3D(x, 0, along[depth] + Slate.DEPTH / 2 + THICKNESS / 2),
+                            new Point3D(width, tall(rows), THICKNESS))
+                    : new Deck(depth, new Point3D(x, -along[depth] + Slate.HEIGHT / 2 + THICKNESS / 2, 0),
+                            new Point3D(width, THICKNESS, deep(rows))));
         }
         return decks;
     }
@@ -109,7 +112,9 @@ record Stacking(Stance stance, Order order, double pitch) implements FunctionalO
         final double[] along = new double[placement.maxDepth() + 1];
         for (int i = 1; i < sequence.size(); i++) {
             final int before = sequence.get(i - 1);
-            along[sequence.get(i)] = along[before] + step(Math.max(1, placement.rowsOf(before)));
+            final int next = sequence.get(i);
+            along[next] = along[before]
+                    + step(Math.max(1, placement.rowsOf(before)), Math.max(1, placement.rowsOf(next)));
         }
         return along;
     }
@@ -120,13 +125,21 @@ record Stacking(Stance stance, Order order, double pitch) implements FunctionalO
         return stance instanceof Stance.Lying == order instanceof Order.BaseFar ? baseFirst : baseFirst.reversed();
     }
 
-    /** How far the next layer sits from one of this many rows, for the whole of it to show past this one. */
-    private double step(final int rows) {
+    /**
+     * How far a layer of these rows sits from the one before it, of those, for the whole of the one before to show past
+     * it: each reaches half its platform either side of the axis.
+     */
+    private double step(final int before, final int after) {
         final double slope = Math.tan(Math.toRadians(-pitch));
         return stance instanceof Stance.Standing
-                ? Math.max(LEAST_GAP, CLEARANCE * (((rows - 1) * ROW + Slate.HEIGHT + 2 * MARGIN) / slope
-                        + Slate.DEPTH + THICKNESS))
-                : Math.max(LEAST_RISE, CLEARANCE * (Slate.HEIGHT + THICKNESS + slope * deep(rows)));
+                ? Math.max(LEAST_GAP, CLEARANCE * ((tall(before) + tall(after)) / 2 / slope + Slate.DEPTH + THICKNESS))
+                : Math.max(LEAST_RISE,
+                        CLEARANCE * (Slate.HEIGHT + THICKNESS + slope * (deep(before) + deep(after)) / 2));
+    }
+
+    /** How tall a standing platform of this many rows is. */
+    private double tall(final int rows) {
+        return (rows - 1) * ROW + Slate.HEIGHT + 2 * MARGIN;
     }
 
     /** How deep a lying platform of this many rows is. */

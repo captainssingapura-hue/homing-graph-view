@@ -49,8 +49,9 @@ new GraphView(graph, focus, new Staging().with(new Stance.Lying()).with(new Orde
 ```
 
 Each layer's platform, its board or its floor, is coloured as a map colours its states, no two neighbours alike. Each
-block is shaped like a 16:9 screen, upright or laid flat, and each layer keeps far enough from the next that, from the
-starting camera, none hides another. Each container shows its vertex's ID on both its long faces, smaller on a short
+block is shaped like a 16:9 screen, upright or laid flat, and centred on the stack's axis, so the stack looks even from
+the side as from the front; each layer keeps far enough from the next that, from the starting camera, none hides
+another. Each container shows its vertex's ID on both its long faces, smaller on a short
 container, and each edge is a rod. A readout in the corner names the camera's mode, what the keys do in it and what is
 selected.
 
