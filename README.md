@@ -114,11 +114,13 @@ mvn -pl homing-graph-view-demo javafx:run
 ```
 
 A list down the left picks the demo to show: `java.se`, `java.desktop` or `jdk.jshell` and every module each requires,
-every module of the JDK, or the British Royal Family. Picking another draws it in place of the last. The JDK's modules
-are read from the running JDK, each a container sized by its packages: small for up to 2, half for up to 9, full for
-more.
+every module of the JDK, or the British Royal Family. Under it, the layout: horizontal, the layers one behind
+another, or vertical, one above another. Picking another demo or layout draws it afresh in place of the last. The
+JDK's modules are read from the running JDK, each a container sized by its packages: small for up to 2, half for up
+to 9, full for more.
 
-The arguments say which demo to start on and how to stage them all. To start on another module, which joins the list,
+The arguments say which demo and layout to start on (`lying` for vertical), and `near` puts level 0 at the near
+end of the stack, in front or on top, for them all. To start on another module, which joins the list,
 or on every module of the JDK:
 
 ```bash
