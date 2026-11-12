@@ -30,13 +30,25 @@ Every module ships a sources jar beside its jar; the studio's quality checks rea
 ## The view
 
 `new GraphView(graph)` is a JavaFX node like any other. It lays the graph out in layers by depth, the vertices that
-depend on nothing furthest back and vertices on a cycle sharing a layer, and draws each vertex as a slate showing its ID
-on both faces and each edge as a rod. The camera starts framed on the whole graph.
+depend on nothing furthest back and vertices on a cycle sharing a layer, over a grid on the floor. It draws each vertex
+as a slate showing its ID on both faces and each edge as a rod. A readout in the corner names the camera's mode and what
+the keys do in it.
 
-- Drag to turn, right-drag or Shift-drag to pan, and scroll to zoom toward the cursor.
-- Click a slate to select it: the focus says what it lights, by default the vertex and everything it reaches. Esc or a
-  click on empty space clears the selection.
-- H glides back to the whole graph.
+The camera has three modes, and Tab steps through them, keeping the view:
+
+- **Orbit**, the start, framed on the whole graph: drag to turn, right-drag or Shift-drag to pan, and scroll to zoom
+  toward the cursor.
+- **Fly**, as a spectator does: W A S D move along the view, up or down included; Space rises and Ctrl sinks; Shift
+  goes four times faster; the wheel changes speed; drag to look. W, A, S or D starts flying from an orbit.
+- **Drone**: the same keys, but level along the heading, so only Space and Ctrl change its height, however it is
+  tilted. The readout shows its altitude.
+
+Speed eases toward what the keys ask, the same at any frame rate, and a free camera stays inside a box around the
+graph, above the floor. 6 walks in: it stands on the floor in front of the graph, looking in. H glides back to the whole
+graph, orbiting.
+
+Click a slate to select it: the focus says what it lights, by default the vertex and everything it reaches. Esc clears
+the selection, as does a click on empty space while orbiting.
 
 `new GraphView(graph, focus)` asks another `Focus` what a selection means.
 

@@ -60,6 +60,12 @@ public record Orbit(double x, double y, double z, double yaw, double pitch, doub
                 Math.sin(pitchRad) * Math.cos(yawRad));
     }
 
+    /** The same view from a free camera, standing where this one is and looking the same way. */
+    public FlyCamera freed() {
+        final Point3D eye = eye();
+        return new FlyCamera(eye.getX(), eye.getY(), eye.getZ(), yaw, pitch);
+    }
+
     /** Turned about the target. */
     public Orbit turned(final double byYaw, final double byPitch) {
         return new Orbit(x, y, z, yaw + byYaw, pitch + byPitch, distance);

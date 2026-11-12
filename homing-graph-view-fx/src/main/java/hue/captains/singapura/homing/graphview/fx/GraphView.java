@@ -14,6 +14,7 @@ import javafx.scene.AmbientLight;
 import javafx.scene.Group;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -25,7 +26,8 @@ import java.util.Optional;
 
 /**
  * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a slate in layers by depth, the
- * base layer furthest back; each edge is a rod. The camera orbits the graph and starts framed on all of it. What a
+ * base layer furthest back, over a grid on the floor; each edge is a rod. The camera starts orbiting, framed on the
+ * whole graph, and can fly or drone through it; a readout in the corner says which, and what the keys do. What a
  * selection means is asked of a Focus, reachability unless another is given.
  */
 public final class GraphView extends Region implements Mutable {
@@ -36,6 +38,7 @@ public final class GraphView extends Region implements Mutable {
     private static final double YAW = -28;
     private static final double PITCH = -24;
     private static final double FONT_SIZE = 15;
+    private static final double READOUT_INSET = 10;
 
     private final Graph graph;
     private final Focus focus;
@@ -46,6 +49,8 @@ public final class GraphView extends Region implements Mutable {
     private final List<Point3D> centres = new ArrayList<>();
     private final Rods rods;
     private final SubScene scene;
+    private final Navigator navigator;
+    private final Label readout = new Label();
     private Optional<Highlight> selection = Optional.empty();
     private boolean framed;
 
@@ -68,14 +73,21 @@ public final class GraphView extends Region implements Mutable {
         placed.forEach((vertex, centre) -> slates.put(vertex, new Slate(vertex, centre, font)));
         centres.addAll(placed.values());
         rods = new Rods(graph.edges(), placed);
-        final Group world = new Group(rods.node(), new AmbientLight(Color.gray(0.6)), rig.node());
+        final Grounds grounds = new Grounds(centres, Slate.HEIGHT / 2);
+        final Group world = new Group(new Grid(grounds).node(), rods.node(), new AmbientLight(Color.gray(0.6)),
+                rig.node());
         slates.values().forEach(slate -> world.getChildren().add(slate.node()));
         scene = new SubScene(world, 1, 1, true, SceneAntialiasing.BALANCED);
         scene.setFill(palette.background());
         scene.setCamera(rig.camera());
-        getChildren().add(scene);
+        navigator = new Navigator(rig, grounds, this::framing, this::showReadout);
+        readout.setMouseTransparent(true);
+        readout.setStyle("-fx-background-color: #0d0f13cc; -fx-text-fill: #9aa3b2; -fx-padding: 6 10 6 10;"
+                + " -fx-background-radius: 4;");
+        getChildren().addAll(scene, readout);
         setFocusTraversable(true);
-        new Gestures(this, rig, scene).attach();
+        new Gestures(this, navigator, scene).attach();
+        showReadout();
         paint();
     }
 
@@ -96,19 +108,24 @@ public final class GraphView extends Region implements Mutable {
         return selection;
     }
 
-    /** Glides back to the whole graph, framed from the starting angle. */
+    /** Glides back to the whole graph, framed from the starting angle, orbiting again if flying. */
     public void home() {
-        rig.glideTo(framing());
+        navigator.home();
     }
 
     @Override
     protected void layoutChildren() {
         scene.setWidth(getWidth());
         scene.setHeight(getHeight());
+        readout.resizeRelocate(READOUT_INSET, READOUT_INSET, readout.prefWidth(-1), readout.prefHeight(-1));
         if (!framed && getWidth() > 0 && getHeight() > 0) {
             framed = true;
             rig.show(framing());
         }
+    }
+
+    private void showReadout() {
+        readout.setText(navigator.readout());
     }
 
     @Override

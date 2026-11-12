@@ -10,11 +10,13 @@ import javafx.scene.transform.Translate;
 
 /**
  * The camera and the light it carries, placed by an orbit: moved to the target, turned by the yaw and the pitch, and
- * backed off by the distance. It can jump to an orbit or glide there.
+ * backed off by the distance. It can jump to an orbit or glide there, or stand where a free camera is.
  */
 final class CameraRig implements Mutable {
 
     private static final double FIELD_OF_VIEW = 35;
+    private static final double FREE_NEAR = 5;
+    private static final double FREE_FAR = 60_000;
 
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
     private final Group node;
@@ -67,6 +69,19 @@ final class CameraRig implements Mutable {
     /** Glides from where the camera is to an orbit. */
     void glideTo(final Orbit next) {
         glide.between(orbit, next);
+    }
+
+    /** Puts the camera where a free camera is, turned in place rather than round a point, stopping any glide. */
+    void free(final FlyCamera flying) {
+        glide.stop();
+        target.setX(flying.x());
+        target.setY(flying.y());
+        target.setZ(flying.z());
+        yaw.setAngle(flying.yaw());
+        pitch.setAngle(flying.pitch());
+        back.setZ(0);
+        camera.setNearClip(FREE_NEAR);
+        camera.setFarClip(FREE_FAR);
     }
 
     private void place(final Orbit next) {
