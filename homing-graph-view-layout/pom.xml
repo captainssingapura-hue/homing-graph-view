@@ -10,9 +10,9 @@
     </parent>
     <artifactId>homing-graph-view-layout</artifactId>
     <description>
-        What is read from a graph before it is drawn: the closure of a vertex, the layers by depth, and a selection's
-        meaning, asked of a Focus, with reachability as the default. No JavaFX and no geometry: a placement is depths,
-        lanes and rows.
+        What is read from a graph before it is drawn: the closure of a vertex, the layers by depth, a layer laid out
+        flat in a block, and a selection's meaning, asked of a Focus, with reachability as the default. No JavaFX and
+        no geometry: a placement is depths, lanes and rows.
     </description>
 
     <dependencies>

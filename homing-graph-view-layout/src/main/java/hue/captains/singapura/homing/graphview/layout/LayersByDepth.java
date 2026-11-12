@@ -3,11 +3,9 @@ package hue.captains.singapura.homing.graphview.layout;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.StatelessFunctionalObject;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Lays a graph out in layers by depth. Without groups, every vertex is a group of its own: it has a lane to itself in
@@ -22,17 +20,14 @@ public record LayersByDepth() implements StatelessFunctionalObject {
      * @param graph the graph, cycles allowed: vertices on a cycle share a layer
      */
     public Placement of(final Graph graph) {
-        final Map<Vertex, Integer> depths = new Depths().of(graph);
-        final Map<Integer, List<Vertex>> layers = new TreeMap<>();
-        for (final Vertex vertex : graph.vertices().items()) {
-            layers.computeIfAbsent(depths.get(vertex), depth -> new ArrayList<>()).add(vertex);
-        }
         final Map<Vertex, Placed> placed = new HashMap<>();
-        layers.forEach((depth, layer) -> {
+        final List<List<Vertex>> layers = new Layers().of(graph).stream().map(layer -> layer.items()).toList();
+        for (int depth = 0; depth < layers.size(); depth++) {
+            final List<Vertex> layer = layers.get(depth);
             for (int i = 0; i < layer.size(); i++) {
                 placed.put(layer.get(i), new Placed(layer.get(i), depth, i - (layer.size() - 1) / 2.0, 0));
             }
-        });
+        }
         return new Placement(graph.vertices().items().stream().map(placed::get).toList());
     }
 }

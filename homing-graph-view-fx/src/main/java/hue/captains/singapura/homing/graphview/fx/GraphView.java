@@ -2,9 +2,7 @@ package hue.captains.singapura.homing.graphview.fx;
 
 import hue.captains.singapura.homing.graphview.layout.Focus;
 import hue.captains.singapura.homing.graphview.layout.Highlight;
-import hue.captains.singapura.homing.graphview.layout.LayersByDepth;
-import hue.captains.singapura.homing.graphview.layout.Placed;
-import hue.captains.singapura.homing.graphview.layout.Placement;
+import hue.captains.singapura.homing.graphview.layout.Layers;
 import hue.captains.singapura.homing.graphview.layout.Reachability;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
@@ -25,16 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a slate in layers by depth, the
- * base layer furthest back, over a grid on the floor; each edge is a rod. The camera starts orbiting, framed on the
- * whole graph, and can fly or drone through it; a readout in the corner says which, and what the keys do. What a
- * selection means is asked of a Focus, reachability unless another is given.
+ * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a slate, its layer by depth laid
+ * out flat in a block, and the blocks set in a stance: standing one behind another, the base's furthest back, or lying
+ * one above another, the base's at the bottom; all over a grid on the floor. Each edge is a rod. The camera starts
+ * orbiting, framed on the whole graph, and can fly or drone through it; a readout in the corner says which, and what
+ * the keys do. What a selection means is asked of a Focus, reachability unless another is given.
  */
 public final class GraphView extends Region implements Mutable {
 
-    private static final double COLUMN = 230;
-    private static final double LAYER = 300;
-    private static final double ROW = 70;
     private static final double YAW = -28;
     private static final double PITCH = -24;
     private static final double FONT_SIZE = 15;
@@ -54,21 +50,32 @@ public final class GraphView extends Region implements Mutable {
     private Optional<Highlight> selection = Optional.empty();
     private boolean framed;
 
-    /** A view of the graph, with reachability as its focus. */
+    /** A view of the graph, with reachability as its focus and its layers standing. */
     public GraphView(final Graph graph) {
         this(graph, new Reachability());
     }
 
     /**
-     * A view of the graph.
+     * A view of the graph, its layers standing.
      *
      * @param graph the graph to draw
      * @param focus what a selection means
      */
     public GraphView(final Graph graph, final Focus focus) {
+        this(graph, focus, new Stance.Standing());
+    }
+
+    /**
+     * A view of the graph.
+     *
+     * @param graph  the graph to draw
+     * @param focus  what a selection means
+     * @param stance how each layer's block is set: standing or lying
+     */
+    public GraphView(final Graph graph, final Focus focus, final Stance stance) {
         this.graph = graph;
         this.focus = focus;
-        final Map<Vertex, Point3D> placed = centres(new LayersByDepth().of(graph));
+        final Map<Vertex, Point3D> placed = new Stacking(stance, PITCH).of(new Layers().of(graph));
         final Font font = Font.font(FONT_SIZE);
         placed.forEach((vertex, centre) -> slates.put(vertex, new Slate(vertex, centre, font)));
         centres.addAll(placed.values());
@@ -146,15 +153,5 @@ public final class GraphView extends Region implements Mutable {
     private void paint() {
         slates.forEach((vertex, slate) -> slate.paint(states.of(selection, vertex), palette));
         rods.paint(selection, states, palette);
-    }
-
-    /** Where each slate is centred: its lane across, its row up and its layer back, the base layer furthest. */
-    private Map<Vertex, Point3D> centres(final Placement placement) {
-        final Map<Vertex, Point3D> placed = new LinkedHashMap<>();
-        for (final Placed place : placement.items()) {
-            placed.put(place.vertex(), new Point3D(place.lane() * COLUMN, -place.row() * ROW,
-                    (placement.maxDepth() - place.depth()) * LAYER));
-        }
-        return placed;
     }
 }

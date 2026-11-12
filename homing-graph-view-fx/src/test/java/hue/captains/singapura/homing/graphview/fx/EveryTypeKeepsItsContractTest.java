@@ -20,7 +20,7 @@ class EveryTypeKeepsItsContractTest {
         assertTrue(types.containsAll(List.of(GraphView.class, Orbit.class, Framing.class, CameraRig.class,
                 Glide.class, Gestures.class, Slate.class, Rods.class, States.class, Palette.class, NodeState.class,
                 EdgeState.class, FlyCamera.class, Velocity.class, Grounds.class, Grid.class, Ticker.class,
-                FreeFlight.class, Navigator.class)), "found " + types);
+                FreeFlight.class, Navigator.class, Stance.class, Stacking.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())

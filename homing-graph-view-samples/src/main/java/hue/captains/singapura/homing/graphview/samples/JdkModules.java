@@ -1,4 +1,4 @@
-package hue.captains.singapura.homing.graphview.demo;
+package hue.captains.singapura.homing.graphview.samples;
 
 import hue.captains.singapura.homing.graphview.model.Edge;
 import hue.captains.singapura.homing.graphview.model.Edges;

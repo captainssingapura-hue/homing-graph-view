@@ -23,12 +23,16 @@
     <modules>
         <!-- The graph: vertices and edges only, as jOntology values. Java and jOntology core, nothing else. -->
         <module>homing-graph-view-model</module>
-        <!-- What is read from a graph before it is drawn: closure, layers by depth, and Focus with Reachability. No JavaFX. -->
+        <!-- What is read from a graph before it is drawn: closure, layers by depth, a layer laid flat in a block, and Focus with Reachability. No JavaFX. -->
         <module>homing-graph-view-layout</module>
+        <!-- Graphs to try the views on: the JDK's own modules, and made-up layers of any size; not published. -->
+        <module>homing-graph-view-samples</module>
         <!-- GraphView, the embeddable JavaFX node that draws a graph in 3D. -->
         <module>homing-graph-view-fx</module>
         <!-- A window over GraphView showing the JDK's own modules; not published. mvn -pl homing-graph-view-demo javafx:run -->
         <module>homing-graph-view-demo</module>
+        <!-- A flat, 2D window over the layout, to look at and polish it; not published. mvn -pl homing-graph-view-bench javafx:run -->
+        <module>homing-graph-view-bench</module>
     </modules>
 
     <properties>

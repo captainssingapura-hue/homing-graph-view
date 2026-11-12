@@ -18,7 +18,8 @@ class EveryTypeKeepsItsContractTest {
     void everyTypeOfTheLayoutKeepsItsContract() throws IOException {
         final List<Class<?>> types = layoutTypes();
         assertTrue(types.containsAll(List.of(Closure.class, Depths.class, LayersByDepth.class, Placed.class,
-                Placement.class, Highlight.class, Focus.class, Reachability.class)), "found " + types);
+                Placement.class, Highlight.class, Focus.class, Reachability.class, Layers.class, Block.class,
+                Ladder.class, Arrangement.class, LayerInBlock.class, Slot.class, Seat.class, Fill.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())
