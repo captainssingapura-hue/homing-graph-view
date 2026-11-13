@@ -10,10 +10,10 @@
     </parent>
     <artifactId>homing-graph-view-demo</artifactId>
     <description>
-        A window over GraphView with a list of demos down the left: JDK modules, read from the running JDK, and the
-        British Royal Family. Not published. After mvn install at the top: mvn -pl homing-graph-view-demo javafx:run.
-        The arguments pick the demo to start on, as -Djavafx.args=java.desktop, ALL-SYSTEM or royal, and stage them
-        all: lying stacks the layers as storeys, and near puts level 0 at the near end, as -Djavafx.args="royal lying near".
+        The viewer over the JDK's own modules, read from the running JDK, and the British Royal Family in portraits.
+        Not published. After mvn install at the top: mvn -pl homing-graph-view-demo javafx:run. The arguments pick the
+        exhibit to start on, as -Djavafx.args=java.desktop, ALL-SYSTEM or royal, and stage them all: lying for the
+        vertical layout, near for level 0 at the near end, as -Djavafx.args="royal lying near".
     </description>
 
     <properties>
@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
-            <artifactId>homing-graph-view-fx</artifactId>
+            <artifactId>homing-graph-view-viewer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -39,6 +39,22 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcing-utils</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

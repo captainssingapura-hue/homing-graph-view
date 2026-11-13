@@ -40,11 +40,14 @@ public record RoyalFamily() implements StatelessFunctionalObject {
         return people.computeIfAbsent(name, Vertex::new);
     }
 
-    /** The marriages shown, the couples' elder generation first. */
+    /**
+     * The marriages shown, the couples' elder generation first. Diana comes before Charles, so that he sits between his
+     * two wives and neither marriage is drawn across the other wife.
+     */
     private List<List<String>> marriages() {
         return List.of(
                 List.of("Queen Elizabeth II", "Prince Philip"),
-                List.of("King Charles III", "Diana Spencer"),
+                List.of("Diana Spencer", "King Charles III"),
                 List.of("King Charles III", "Queen Camilla"));
     }
 

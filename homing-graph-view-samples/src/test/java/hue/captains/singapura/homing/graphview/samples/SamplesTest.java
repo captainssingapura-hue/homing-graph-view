@@ -60,7 +60,7 @@ class SamplesTest {
         assertEquals(List.of(2, 6, 8, 15), generations.stream().map(List::size).toList());
         assertEquals(List.of("Queen Elizabeth II", "Prince Philip"), generations.get(0));
         // those who married in share their spouse's generation, through the marriage's two edges
-        assertEquals(List.of("King Charles III", "Diana Spencer", "Queen Camilla", "Princess Anne",
+        assertEquals(List.of("Diana Spencer", "King Charles III", "Queen Camilla", "Princess Anne",
                 "Andrew Mountbatten-Windsor", "Prince Edward"), generations.get(1));
         assertTrue(generations.get(2).containsAll(List.of("Prince William", "Zara Tindall", "James, Earl of Wessex")));
         assertTrue(generations.get(3).containsAll(List.of("Prince George", "Princess Lilibet", "Adelaide")));

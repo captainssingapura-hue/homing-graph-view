@@ -10,8 +10,9 @@
     </parent>
     <artifactId>homing-graph-view-fx</artifactId>
     <description>
-        GraphView, an ordinary JavaFX node that draws a graph in 3D: a slate for each vertex in layers by depth, a rod
-        for each edge, an orbiting camera, and a selection whose meaning is asked of a Focus.
+        GraphView, an ordinary JavaFX node that draws a graph in 3D: a slate for each vertex in layers by depth, each
+        edge drawn in the style its graph's styler gives it, an orbiting camera, and a selection whose meaning is asked
+        of a Focus.
     </description>
 
     <dependencies>

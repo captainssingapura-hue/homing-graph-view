@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+        <artifactId>homing-graph-view</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>homing-graph-view-viewer</artifactId>
+    <description>
+        A ready-made window over GraphView, for anyone to use as it is: give it a registry of exhibits - each a graph
+        with the shapes its vertices are drawn as and the explanations of them - and it shows a list of them, a choice
+        of layout, the exhibit picked in 3D, and the details of what is selected. ViewerApplication makes it a JavaFX
+        application from one method.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.homing.graphview</groupId>
+            <artifactId>homing-graph-view-fx</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.captainssingapura-hue.lang.ontology</groupId>
+            <artifactId>enforcing-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -23,49 +23,64 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The layers set in 3D, standing and lying, level 0 at either end: each layer keeps its arrangement in a plane of its
- * own on a platform holding all its containers, nothing meets anything else, and from the starting camera, looking
- * straight in, no layer hides another.
+ * The layers set in 3D, standing and lying, level 0 at either end, for figures as low and long as containers and as
+ * tall as portraits: each layer keeps its arrangement in a plane of its own on a platform holding all its figures,
+ * nothing meets anything else, and from the starting camera, looking straight in, no layer hides another.
  */
 class StackingTest {
 
     private static final double PITCH = -24;
     private static final double CLOSE = 1e-9;
-    /** The size of the largest container, which every container fits in. */
-    private static final Point3D FULL = new Point3D(Slate.LENGTH, Slate.HEIGHT, Slate.DEPTH);
+    /** The room of a full container, and of a portrait in its frame. */
+    private static final Room CONTAINERS = new Room(190, 46, 44);
+    private static final Room PORTRAITS = new Room(140, 172, 14);
 
     /** Layers of 1, 30, 13, 8, 12, 5 and 1 vertices, level 0's first: the JDK's modules, all of them. */
     private final Graph graph = graph(1, 30, 13, 8, 12, 5, 1);
     private final List<Vertices> layers = new Layers().of(graph);
-    private final Stacking standing = new Stacking(new Stance.Standing(), new Order.BaseFar(), PITCH);
-    private final Stacking lying = new Stacking(new Stance.Lying(), new Order.BaseFar(), PITCH);
-    private final List<Stacking> every = List.of(standing, lying,
-            new Stacking(new Stance.Standing(), new Order.BaseNear(), PITCH),
-            new Stacking(new Stance.Lying(), new Order.BaseNear(), PITCH));
+    private final Stacking standing = new Stacking(new Stance.Standing(), new Order.BaseFar(), PITCH, CONTAINERS);
+    private final Stacking lying = new Stacking(new Stance.Lying(), new Order.BaseFar(), PITCH, CONTAINERS);
+    private final List<Stacking> every = every();
 
     @Test
     void standingEachLayerIsAnUprightPlaneKeepingItsArrangement() {
-        final Placement placement = placement(standing);
-        final Map<Vertex, Point3D> centres = standing.of(placement);
-        for (final Placed placed : placement.items()) {
-            final Point3D centre = centres.get(placed.vertex());
-            assertEquals(firstOf(centres, placed.depth()).getZ(), centre.getZ(), CLOSE, "one plane, facing us");
-            assertEquals(placed.lane() * Stacking.COLUMN, centre.getX(), CLOSE, "lanes across");
-            assertEquals(-middled(placement, placed) * Stacking.ROW, centre.getY(), CLOSE, "rows up, centred");
+        for (final Stacking stacking : every.stream().filter(s -> s.stance() instanceof Stance.Standing).toList()) {
+            final Placement placement = placement(stacking);
+            final Map<Vertex, Point3D> centres = stacking.of(placement);
+            for (final Placed placed : placement.items()) {
+                final Point3D centre = centres.get(placed.vertex());
+                assertEquals(firstOf(centres, placed.depth()).getZ(), centre.getZ(), CLOSE, "one plane, facing us");
+                assertEquals(placed.lane() * stacking.column(), centre.getX(), CLOSE, "lanes across");
+                assertEquals(-middled(placement, placed) * stacking.row(), centre.getY(), CLOSE, "rows up, centred");
+            }
         }
     }
 
     @Test
     void lyingEachLayerIsAFloorKeepingItsArrangement() {
-        final Placement placement = placement(lying);
-        final Map<Vertex, Point3D> centres = lying.of(placement);
-        for (final Placed placed : placement.items()) {
-            final Point3D centre = centres.get(placed.vertex());
-            assertEquals(firstOf(centres, placed.depth()).getY(), centre.getY(), CLOSE, "one level plane");
-            assertEquals(placed.lane() * Stacking.COLUMN, centre.getX(), CLOSE, "lanes across");
-            assertEquals(middled(placement, placed) * Stacking.ROW_DEEP, centre.getZ(), CLOSE,
-                    "rows going back, centred");
+        for (final Stacking stacking : every.stream().filter(s -> s.stance() instanceof Stance.Lying).toList()) {
+            final Placement placement = placement(stacking);
+            final Map<Vertex, Point3D> centres = stacking.of(placement);
+            for (final Placed placed : placement.items()) {
+                final Point3D centre = centres.get(placed.vertex());
+                assertEquals(firstOf(centres, placed.depth()).getY(), centre.getY(), CLOSE, "one level plane");
+                assertEquals(placed.lane() * stacking.column(), centre.getX(), CLOSE, "lanes across");
+                assertEquals(middled(placement, placed) * stacking.rowDeep(), centre.getZ(), CLOSE,
+                        "rows going back, centred");
+            }
         }
+    }
+
+    @Test
+    void theSlotsFollowTheFiguresRoom() {
+        // containers keep the slots they always had
+        assertEquals(List.of(230.0, 80.0, 160.0), List.of(standing.column(), standing.row(), lying.rowDeep()));
+        final Stacking tall = new Stacking(new Stance.Lying(), new Order.BaseFar(), PITCH, PORTRAITS);
+        assertEquals(List.of(180.0, 206.0), List.of(tall.column(), tall.row()));
+        // lying, a tall figure's rows stand far enough apart for each to show over the one in front
+        final double slope = Math.tan(Math.toRadians(-PITCH));
+        assertTrue(tall.rowDeep() >= PORTRAITS.height() / slope + PORTRAITS.depth(), "" + tall.rowDeep());
+        assertEquals(PORTRAITS.height() / 2 + Stacking.MARGIN + Stacking.THICKNESS, tall.below(), CLOSE);
     }
 
     @Test
@@ -85,14 +100,15 @@ class StackingTest {
     }
 
     @Test
-    void eachLayersPlatformHoldsAllItsContainers() {
+    void eachLayersPlatformHoldsAllItsFigures() {
         for (final Stacking stacking : every) {
             final Placement placement = placement(stacking);
             final Map<Vertex, Point3D> centres = stacking.of(placement);
+            final Point3D size = size(stacking);
             for (final Deck deck : stacking.decks(placement)) {
                 for (final Vertex vertex : layers.get(deck.depth()).items()) {
-                    final Point3D low = centres.get(vertex).subtract(FULL.multiply(0.5));
-                    final Point3D high = centres.get(vertex).add(FULL.multiply(0.5));
+                    final Point3D low = centres.get(vertex).subtract(size.multiply(0.5));
+                    final Point3D high = centres.get(vertex).add(size.multiply(0.5));
                     assertTrue(deck.low().getX() < low.getX() && high.getX() < deck.high().getX(), "across");
                     if (stacking.stance() instanceof Stance.Standing) {
                         assertTrue(deck.low().getY() < low.getY() && high.getY() < deck.high().getY(), "up");
@@ -110,18 +126,18 @@ class StackingTest {
     void everyLayerIsCentredOnTheStacksAxisSoItLooksEvenFromTheSide() {
         for (final Stacking stacking : every) {
             final Placement placement = placement(stacking);
-            final boolean standing = stacking.stance() instanceof Stance.Standing;
+            final boolean upright = stacking.stance() instanceof Stance.Standing;
             for (final Deck deck : stacking.decks(placement)) {
                 // the axis runs back through the stack when standing, up it when lying
                 assertEquals(0, deck.x(), CLOSE, stacking + ": layer " + deck.depth() + " across");
-                assertEquals(0, standing ? deck.y() : deck.z(), CLOSE, stacking + ": layer " + deck.depth());
+                assertEquals(0, upright ? deck.y() : deck.z(), CLOSE, stacking + ": layer " + deck.depth());
             }
             final Map<Vertex, Point3D> centres = stacking.of(placement);
             for (final Vertices layer : layers) {
                 final double highest = layer.items().stream().map(centres::get)
-                        .mapToDouble(centre -> standing ? -centre.getY() : centre.getZ()).max().orElseThrow();
+                        .mapToDouble(centre -> upright ? -centre.getY() : centre.getZ()).max().orElseThrow();
                 final double lowest = layer.items().stream().map(centres::get)
-                        .mapToDouble(centre -> standing ? -centre.getY() : centre.getZ()).min().orElseThrow();
+                        .mapToDouble(centre -> upright ? -centre.getY() : centre.getZ()).min().orElseThrow();
                 assertEquals(0, highest + lowest, CLOSE, stacking + ": rows reach as far either side");
             }
         }
@@ -139,11 +155,12 @@ class StackingTest {
     void nothingMeetsAnythingElse() {
         for (final Stacking stacking : every) {
             final Placement placement = placement(stacking);
+            final Point3D size = size(stacking);
             final List<Point3D[]> boxes = new ArrayList<>();
             stacking.of(placement).values().forEach(centre -> boxes.add(new Point3D[] {
-                    centre.subtract(FULL.multiply(0.5)), centre.add(FULL.multiply(0.5))}));
+                    centre.subtract(size.multiply(0.5)), centre.add(size.multiply(0.5))}));
             stacking.decks(placement).forEach(deck -> boxes.add(new Point3D[] {deck.low(), deck.high()}));
-            // a container sits on its platform, or hangs on it, face to face: touching is not meeting
+            // a figure sits on its platform, or hangs on it, face to face: touching is not meeting
             for (int i = 0; i < boxes.size(); i++) {
                 for (int j = i + 1; j < boxes.size(); j++) {
                     assertFalse(overlap(boxes.get(i), boxes.get(j)), stacking + ": boxes " + i + " and " + j);
@@ -165,8 +182,8 @@ class StackingTest {
                             ? firstOf(centres, depth).getZ() : -firstOf(centres, depth).getY()))
                     .toList();
             for (int i = 1; i < order.size(); i++) {
-                final double[] before = reach(order.get(i - 1), centres, decks, up);
-                final double[] after = reach(order.get(i), centres, decks, up);
+                final double[] before = reach(order.get(i - 1), centres, decks, size(stacking), up);
+                final double[] after = reach(order.get(i), centres, decks, size(stacking), up);
                 assertTrue(after[0] >= before[1], stacking + ": layer " + order.get(i) + " is hidden, "
                         + after[0] + " below " + before[1]);
             }
@@ -174,14 +191,15 @@ class StackingTest {
     }
 
     @Test
-    void containersComeInStandardSizesThatAllFitOneSlot() {
+    void containersComeInStandardSizesInTheRoomOfAFullOne() {
         final List<Container> sizes = List.of(new Container.Small(), new Container.Half(), new Container.Full());
         assertEquals(List.of(0.25, 0.5, 1.0), sizes.stream().map(Container::length).toList());
-        assertTrue(Slate.LENGTH <= Stacking.COLUMN && Slate.HEIGHT <= Stacking.ROW
-                && Slate.DEPTH <= Stacking.ROW_DEEP, "a full container fits a slot either way");
+        assertEquals(CONTAINERS, new ContainerShapes(new Uniform(new Container.Full())).room());
         assertEquals(new Container.Half(), new Uniform(new Container.Half()).of(new Vertex("any")));
-        assertEquals(new Staging(new Stance.Lying(), new Order.BaseNear(), new Uniform(new Container.Full())),
+        assertEquals(new Staging(new Stance.Lying(), new Order.BaseNear(),
+                        new ContainerShapes(new Uniform(new Container.Full()))),
                 new Staging().with(new Stance.Lying()).with(new Order.BaseNear()));
+        assertThrows(IllegalArgumentException.class, () -> new Room(0, 10, 10));
     }
 
     @Test
@@ -192,12 +210,30 @@ class StackingTest {
         }
     }
 
-    /** How low and how high on the screen a layer reaches: its containers' and its platform's corners. */
+    /** Every stacking: each stance, each order, for containers and for portraits. */
+    private List<Stacking> every() {
+        final List<Stacking> every = new ArrayList<>();
+        for (final Room room : List.of(CONTAINERS, PORTRAITS)) {
+            for (final Stance stance : List.of(new Stance.Standing(), new Stance.Lying())) {
+                for (final Order order : List.of(new Order.BaseFar(), new Order.BaseNear())) {
+                    every.add(new Stacking(stance, order, PITCH, room));
+                }
+            }
+        }
+        return every;
+    }
+
+    /** The size of a stacking's figures, the room they fit in. */
+    private Point3D size(final Stacking stacking) {
+        return new Point3D(stacking.room().width(), stacking.room().height(), stacking.room().depth());
+    }
+
+    /** How low and how high on the screen a layer reaches: its figures' and its platform's corners. */
     private double[] reach(final int depth, final Map<Vertex, Point3D> centres, final List<Deck> decks,
-                           final Point3D up) {
+                           final Point3D size, final Point3D up) {
         final List<Point3D> corners = new ArrayList<>(corners(decks.get(depth).low(), decks.get(depth).high()));
         layers.get(depth).items().forEach(vertex -> corners.addAll(corners(
-                centres.get(vertex).subtract(FULL.multiply(0.5)), centres.get(vertex).add(FULL.multiply(0.5)))));
+                centres.get(vertex).subtract(size.multiply(0.5)), centres.get(vertex).add(size.multiply(0.5)))));
         return new double[] {corners.stream().mapToDouble(up::dotProduct).min().orElseThrow(),
                 corners.stream().mapToDouble(up::dotProduct).max().orElseThrow()};
     }
@@ -229,7 +265,7 @@ class StackingTest {
         return new LayersByDepth(stacking.ladder()).of(graph);
     }
 
-    /** The centre of a layer's first container. */
+    /** The centre of a layer's first figure. */
     private Point3D firstOf(final Map<Vertex, Point3D> centres, final int depth) {
         return centres.get(layers.get(depth).items().getFirst());
     }
