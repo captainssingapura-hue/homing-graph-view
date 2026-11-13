@@ -3,6 +3,9 @@ An embeddable 3D explorer for dependency graphs, in JavaFX. Its features, the wo
 this code live in [homing-graph-view-studio](https://github.com/captainssingapura-hue/homing-graph-view-studio);
 nothing here depends on the studio.
 
+To use it in a project of your own - from the ready-made viewer to your own shapes, edges and selections - see
+[the guide](GUIDE.md).
+
 ## Modules
 
 | Module | Holds | Depends on |
@@ -30,6 +33,9 @@ mvn install
 ```
 
 Every module ships a sources jar beside its jar; the studio's quality checks read both.
+
+For what a project of your own needs to depend on and how to set up its build, see
+[setting up the build](GUIDE.md#setting-up-the-build) in the guide.
 
 ## The view
 
