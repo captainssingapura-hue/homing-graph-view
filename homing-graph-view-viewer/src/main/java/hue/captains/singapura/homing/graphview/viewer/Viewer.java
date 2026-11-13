@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 
 /**
  * A ready-made window's content over GraphView: down the left, the registry's exhibits and a choice of layout,
- * horizontal or vertical; in the middle, the exhibit picked, drawn in the layout chosen with its own shapes; down the
- * right, the explanation of what is selected in it, kept up by listening to the view's selection events. Picking
- * another exhibit or layout draws it afresh in place of the last.
+ * horizontal or vertical; in the middle, the exhibit picked, drawn in the layout chosen with its own shapes and its
+ * own edge styler; down the right, the explanation of what is selected in it, kept up by listening to the view's
+ * selection events. Picking another exhibit or layout draws it afresh in place of the last.
  */
 public final class Viewer implements Mutable {
 
@@ -101,7 +101,8 @@ public final class Viewer implements Mutable {
             return;
         }
         final Exhibit exhibit = registry.items().get(picked);
-        final GraphView view = new GraphView(exhibit.graph(), new Reachability(), staging.with(exhibit.shapes()));
+        final GraphView view = new GraphView(exhibit.graph(), new Reachability(), staging.with(exhibit.shapes()),
+                exhibit.styler());
         details.clear();
         view.subscribe(event -> {
             switch (event) {

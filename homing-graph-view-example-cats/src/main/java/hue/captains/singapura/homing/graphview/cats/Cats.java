@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * Cat breeds and the breeds they were bred from, in the ready-made viewer: once as cat's-head badges explained from the
- * studbook, and once plainly, as the viewer draws any graph it is given nothing more for.
+ * studbook, with crosses with a wild cat dashed, and once plainly, as the viewer draws any graph it is given nothing
+ * more for.
  */
 public final class Cats extends ViewerApplication {
 
@@ -20,7 +21,8 @@ public final class Cats extends ViewerApplication {
     @Override
     protected Registry registry(final List<String> args) {
         final Graph breeds = new Studbook().graph();
-        return new Registry(List.of(new Exhibit("Cat breeds", breeds, new CatBadges(), new CatExplanations()),
+        return new Registry(List.of(new Exhibit("Cat breeds", breeds, new CatBadges(), new CatExplanations())
+                        .with(new CatStyler(breeds)),
                 new Exhibit("Cat breeds, plainly", breeds)));
     }
 }

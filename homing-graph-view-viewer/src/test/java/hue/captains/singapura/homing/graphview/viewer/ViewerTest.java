@@ -1,8 +1,11 @@
 package hue.captains.singapura.homing.graphview.viewer;
 
+import hue.captains.singapura.homing.graphview.fx.Colour;
 import hue.captains.singapura.homing.graphview.fx.Container;
 import hue.captains.singapura.homing.graphview.fx.ContainerShapes;
+import hue.captains.singapura.homing.graphview.fx.EdgeStyle;
 import hue.captains.singapura.homing.graphview.fx.Order;
+import hue.captains.singapura.homing.graphview.fx.SameStyle;
 import hue.captains.singapura.homing.graphview.fx.Stance;
 import hue.captains.singapura.homing.graphview.fx.Uniform;
 import hue.captains.singapura.homing.graphview.model.Edge;
@@ -32,11 +35,15 @@ class ViewerTest {
             new Exhibit("British Royal Family", graph), new Exhibit("JDK: every module (ALL-SYSTEM)", graph)));
 
     @Test
-    void anExhibitShownPlainlyIsInFullContainersExplainedByName() {
+    void anExhibitShownPlainlyIsInFullContainersExplainedByNameWithPlainRods() {
         final Exhibit plain = new Exhibit("Plain", graph);
         assertEquals(new ContainerShapes(new Uniform(new Container.Full())), plain.shapes());
         assertEquals(new Names(), plain.explanations());
         assertEquals(new Explanation("core", ""), plain.explanations().of(core, graph));
+        assertEquals(new SameStyle(), plain.styler());
+        final SameStyle gold = new SameStyle(new EdgeStyle().with(new Colour(0xd4af37)));
+        assertEquals(new Exhibit("Plain", graph, plain.shapes(), plain.explanations(), gold), plain.with(gold));
+        assertThrows(NullPointerException.class, () -> plain.with(null));
         assertThrows(IllegalArgumentException.class, () -> new Exhibit(" ", graph));
         assertThrows(NullPointerException.class, () -> new Exhibit("No graph", null));
     }

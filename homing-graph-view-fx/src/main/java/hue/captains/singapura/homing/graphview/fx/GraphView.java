@@ -8,6 +8,7 @@ import hue.captains.singapura.homing.graphview.layout.Reachability;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.Mutable;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
 import javafx.scene.Group;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -28,8 +30,9 @@ import java.util.function.Consumer;
  * A graph drawn in 3D, as an ordinary JavaFX node to put in any scene. Each vertex is a figure, a container unless
  * the staging's shapes say otherwise, its layer by depth laid out flat in a block on a platform coloured for the layer,
  * and the layers stacked as a {@link Staging} says: standing one behind another or lying one above another, level 0
- * at either end; all over a grid on the floor. Each edge is a rod. The camera starts orbiting, framed on the whole
- * graph, and can fly or drone through it; a readout in the corner says which, what the keys do and what is selected.
+ * at either end; all over a grid on the floor. Each edge is drawn as the graph's own {@link EdgeStyler} says, a
+ * plain rod unless it says otherwise. The camera starts orbiting, framed on the whole graph, and can fly or drone
+ * through it; a readout in the corner says which, what the keys do and what is selected.
  * What a selection means is asked of a Focus, reachability unless another is given, and each change of it goes out as
  * a {@link VertexSelection} to the listeners subscribed.
  */
@@ -72,13 +75,26 @@ public final class GraphView extends Region implements Mutable {
     }
 
     /**
-     * A view of the graph.
+     * A view of the graph, each edge a plain grey rod.
      *
      * @param graph   the graph to draw
      * @param focus   what a selection means
      * @param staging how the layers are set and stacked, and what each vertex is drawn as
      */
     public GraphView(final Graph graph, final Focus focus, final Staging staging) {
+        this(graph, focus, staging, new SameStyle());
+    }
+
+    /**
+     * A view of the graph.
+     *
+     * @param graph   the graph to draw
+     * @param focus   what a selection means
+     * @param staging how the layers are set and stacked, and what each vertex is drawn as
+     * @param styler  how each edge is drawn: made for this graph, and asked of nothing else
+     */
+    public GraphView(final Graph graph, final Focus focus, final Staging staging, final EdgeStyler styler) {
+        Objects.requireNonNull(styler, "A view needs its graph's edge styler");
         this.graph = graph;
         this.focus = focus;
         final Shapes shapes = staging.shapes();
@@ -89,7 +105,9 @@ public final class GraphView extends Region implements Mutable {
         room = shapes.room();
         yaw = stacking.yaw();
         centres.addAll(placed.values());
-        rods = new Rods(graph.edges(), placed);
+        final Map<Vertex, Bounds> boxes = new LinkedHashMap<>();
+        slates.forEach((vertex, slate) -> boxes.put(vertex, slate.box()));
+        rods = new Rods(graph.edges(), new Spans(graph.edges(), placed, boxes), styler);
         final Grounds grounds = new Grounds(centres, stacking.below());
         final Platforms platforms = new Platforms(stacking.decks(placement), palette);
         final Group world = new Group(new Grid(grounds).node(), platforms.node(), rods.node(),

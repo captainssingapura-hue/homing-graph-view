@@ -1,7 +1,13 @@
 package hue.captains.singapura.homing.graphview.demo;
 
+import hue.captains.singapura.homing.graphview.fx.Colour;
 import hue.captains.singapura.homing.graphview.fx.ContainerShapes;
+import hue.captains.singapura.homing.graphview.fx.EdgeStyle;
+import hue.captains.singapura.homing.graphview.fx.Girth;
 import hue.captains.singapura.homing.graphview.fx.Room;
+import hue.captains.singapura.homing.graphview.fx.SameStyle;
+import hue.captains.singapura.homing.graphview.fx.Texture;
+import hue.captains.singapura.homing.graphview.model.Edge;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.homing.graphview.samples.RoyalFamily;
@@ -55,6 +61,8 @@ class DemoTest {
         final Exhibit royals = registry.items().getLast();
         assertEquals(new Portraits(), royals.shapes());
         assertEquals(new RoyalExplanations(), royals.explanations());
+        assertEquals(new RoyalStyler(new RoyalFamily().of()), royals.styler());
+        assertEquals(new SameStyle(), registry.items().getFirst().styler());
         assertEquals(new Room(140, 172, 14), new Portraits().room());
         assertEquals(new ContainerShapes(new PackageCounts()), registry.items().getFirst().shapes());
         assertEquals(new Names(), registry.items().getFirst().explanations());
@@ -80,7 +88,7 @@ class DemoTest {
     @Test
     void theDetailsOfAPersonNameTheirParentsSpousesAndChildrenFromTheGraph() {
         final Graph family = new RoyalFamily().of();
-        assertEquals("Parents: King Charles III and Diana Spencer\n"
+        assertEquals("Parents: Diana Spencer and King Charles III\n"
                 + "Children: Prince George, Princess Charlotte and Prince Louis",
                 new Kin().of(family, new Vertex("Prince William")));
         assertEquals("Parents: Queen Elizabeth II and Prince Philip\nMarried to: Diana Spencer and Queen Camilla\n"
@@ -99,13 +107,30 @@ class DemoTest {
     }
 
     @Test
+    void aMarriageIsAGoldDoubleLineAndAChildsEdgeToAParentAThinGreyRod() {
+        final Graph family = new RoyalFamily().of();
+        final RoyalStyler styler = new RoyalStyler(family);
+        assertEquals(6, styler.marriages().size(), "three marriages, an edge each way");
+        final EdgeStyle marriage = styler.style(new Edge(person("Prince Philip"), person("Queen Elizabeth II")));
+        assertEquals(new Texture.Twin(), marriage.texture());
+        assertEquals(new Colour(0xd4af37), marriage.colour());
+        assertEquals(marriage, styler.style(new Edge(person("Queen Elizabeth II"), person("Prince Philip"))));
+        assertEquals(new EdgeStyle().with(new Girth(-0.5)),
+                styler.style(new Edge(person("King Charles III"), person("Queen Elizabeth II"))));
+    }
+
+    private Vertex person(final String name) {
+        return new Vertex(name);
+    }
+
+    @Test
     void everyTypeOfTheDemoKeepsItsContract() throws IOException {
         final CodeSource main = Demo.class.getProtectionDomain().getCodeSource();
         final List<Class<?>> types = new PackageScanner().scan(Demo.class.getPackageName()).stream()
                 .filter(type -> main.equals(type.getProtectionDomain().getCodeSource()))
                 .toList();
         assertTrue(types.containsAll(List.of(Demo.class, PackageCounts.class, Portraits.class, Placeholders.class,
-                Titles.class, Title.class, Biographies.class, Kin.class, RoyalExplanations.class)), "found " + types);
+                Titles.class, Title.class, Biographies.class, Kin.class, RoyalExplanations.class, RoyalStyler.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())

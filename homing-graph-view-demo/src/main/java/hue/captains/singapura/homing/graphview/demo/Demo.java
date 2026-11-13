@@ -1,6 +1,7 @@
 package hue.captains.singapura.homing.graphview.demo;
 
 import hue.captains.singapura.homing.graphview.fx.ContainerShapes;
+import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.samples.JdkModules;
 import hue.captains.singapura.homing.graphview.samples.RoyalFamily;
 import hue.captains.singapura.homing.graphview.viewer.Arguments;
@@ -13,7 +14,8 @@ import java.util.List;
 
 /**
  * The demo: the viewer over the JDK's own modules, each a container sized by its packages and explained by its name,
- * and over the British Royal Family, each person a portrait explained by who they are and their family. An argument
+ * and over the British Royal Family, each person a portrait explained by who they are and their family, each marriage
+ * a gold double line. An argument
  * naming a JDK module not on the list, as java.xml, adds it at the top and starts on it.
  */
 public final class Demo extends ViewerApplication {
@@ -45,8 +47,10 @@ public final class Demo extends ViewerApplication {
         return new Exhibit(name, new JdkModules().of(root), new ContainerShapes(new PackageCounts()), new Names());
     }
 
-    /** The British Royal Family, in portraits. */
+    /** The British Royal Family, in portraits, married couples joined in gold. */
     private Exhibit royals() {
-        return new Exhibit("British Royal Family", new RoyalFamily().of(), new Portraits(), new RoyalExplanations());
+        final Graph family = new RoyalFamily().of();
+        return new Exhibit("British Royal Family", family, new Portraits(), new RoyalExplanations())
+                .with(new RoyalStyler(family));
     }
 }

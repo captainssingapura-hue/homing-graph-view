@@ -2,6 +2,7 @@ package hue.captains.singapura.homing.graphview.fx;
 
 import hue.captains.singapura.homing.graphview.model.Vertex;
 import hue.captains.singapura.tao.ontology.Mutable;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -49,6 +50,11 @@ final class Slate implements Mutable {
     /** The figure's node in the scene. */
     Group node() {
         return node;
+    }
+
+    /** The box the figure fills, where it is in the scene. */
+    Bounds box() {
+        return node.getBoundsInParent();
     }
 
     /** Draws the figure in a state. */

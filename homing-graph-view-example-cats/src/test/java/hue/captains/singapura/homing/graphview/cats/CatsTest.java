@@ -1,8 +1,14 @@
 package hue.captains.singapura.homing.graphview.cats;
 
+import hue.captains.singapura.homing.graphview.fx.Colour;
+import hue.captains.singapura.homing.graphview.fx.EdgeStyle;
+import hue.captains.singapura.homing.graphview.fx.SameStyle;
+import hue.captains.singapura.homing.graphview.fx.Texture;
 import hue.captains.singapura.homing.graphview.layout.Layers;
+import hue.captains.singapura.homing.graphview.model.Edge;
 import hue.captains.singapura.homing.graphview.model.Graph;
 import hue.captains.singapura.homing.graphview.model.Vertex;
+import hue.captains.singapura.homing.graphview.model.Vertices;
 import hue.captains.singapura.homing.graphview.viewer.Exhibit;
 import hue.captains.singapura.homing.graphview.viewer.Explanation;
 import hue.captains.singapura.homing.graphview.viewer.Names;
@@ -66,6 +72,18 @@ class CatsTest {
         assertEquals(new CatBadges(), registry.items().getFirst().shapes());
         assertEquals(new CatExplanations(), registry.items().getFirst().explanations());
         assertEquals(new Names(), registry.items().getLast().explanations());
+        assertEquals(new CatStyler(breeds), registry.items().getFirst().styler());
+        assertEquals(new SameStyle(), registry.items().getLast().styler());
+    }
+
+    @Test
+    void aCrossWithAWildCatIsDashedInAmberAndAnyOtherBreedingAPlainRod() {
+        final CatStyler styler = new CatStyler(breeds);
+        assertEquals(new Vertices(List.of(new Vertex("Asian Leopard Cat"), new Vertex("Serval"))), styler.wild());
+        final EdgeStyle wild = styler.style(new Edge(new Vertex("Bengal"), new Vertex("Asian Leopard Cat")));
+        assertEquals(new Texture.Dashed(), wild.texture());
+        assertEquals(new Colour(0xb07a34), wild.colour());
+        assertEquals(new EdgeStyle(), styler.style(new Edge(new Vertex("Bengal"), new Vertex("Domestic Shorthair"))));
     }
 
     @Test
@@ -75,7 +93,7 @@ class CatsTest {
                 .filter(type -> main.equals(type.getProtectionDomain().getCodeSource()))
                 .toList();
         assertTrue(types.containsAll(List.of(Cats.class, Studbook.class, Breed.class, Coat.class, CatBadges.class,
-                CatExplanations.class)), "found " + types);
+                CatExplanations.class, CatStyler.class)), "found " + types);
         final OntologyEnforcer enforcer = new OntologyEnforcer();
         final List<String> violations = types.stream()
                 .flatMap(type -> enforcer.enforce(type).stream())
